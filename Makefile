@@ -1,6 +1,10 @@
+.PHONY: dev
+dev:
+	cd aap && python3 manage.py runserver 8000
+
 .PHONY: run
 run:
-	python manage.py runserver :8000
+	PYTHONPATH=aap gunicorn aap.wsgi
 
 .PHONY: lint
 lint:
