@@ -18,6 +18,23 @@ class Tag(Base):
         return self.name
 
 
+class Category(Base):
+    """Category model implementation."""
+
+    name = models.CharField(max_length=75)
+    parent = models.CharField(max_length=32, default="")
+
+    def __str__(self):
+        if self.is_deleted:
+            return f"{self.name} [deleted]"
+        return self.name
+
+
+def get_deleted_post_category():
+    """Retrieve or create a category with DELETED_POST_CATEGORY_NAME."""
+    return Category.objects.get_or_create(name=settings.DELETED_POST_CATEGORY_NAME)
+
+
 class Post(Base):
     """Post model implementation."""
 
@@ -26,12 +43,17 @@ class Post(Base):
     content = models.TextField(null=False)
     slug = models.CharField(max_length=1024, unique=True)
     tags = models.ManyToManyField(Tag, related_name="tags")
+    bookmark = models.ManyToManyField(User, related_name="bookmarks", null=True)
     image = models.ImageField()
     is_draft = models.BooleanField(default=False)
     previous = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.DO_NOTHING
     )
     publisher = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET(get_deleted_post_category),
+    )
     visited = models.PositiveIntegerField(default=0)
 
     def __str__(self):
@@ -42,6 +64,21 @@ class Post(Base):
         if self.previous:
             return f"{self.title} [continue]"
         return self.title
+
+
+class Comment(Base):
+    """Comment model implementation."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=500)
+    replyTo = models.ForeignKey("self", on_delete=models.CASCADE, null=True, default="")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    is_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        if self.is_deleted:
+            return f"{self.message} [deleted]"
+        return self.message
 
 
 class Star(Base):
@@ -58,10 +95,3 @@ class Star(Base):
 
     def __str__(self):
         return f"{self.post.title}[{self.star}]"
-
-
-class Bookmark(Base):
-    """Bookmark (posts) model implementation."""
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
