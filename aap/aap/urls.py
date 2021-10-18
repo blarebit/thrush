@@ -6,5 +6,6 @@ The `urlpatterns` list routes URLs to views. For more information please see:
 from django.urls import path, include
 
 urlpatterns = [
+    # Blog package URL
     path("blog/", include("blog.urls"), name="blog"),
 ]
