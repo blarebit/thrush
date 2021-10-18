@@ -105,7 +105,11 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Post app settings.
+# Blog app settings.
 
 STAR_MIN_VALUE = int(os.environ.get("AAP_STAR_MIN_VALUE", "1"))
 STAR_MAX_VALUE = int(os.environ.get("AAP_STAR_MAX_VALUE", "10"))
+
+# Set Default value for "category" field in "post" table when
+# category record deleted in "category" table
+DELETED_POST_CATEGORY_NAME = "__deleted_category"
