@@ -1,6 +1,7 @@
 """Blog views."""
 import uuid
 
+from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -45,6 +46,20 @@ def full_posts(post):
     return result
 
 
+class CategoriesList(viewsets.ModelViewSet):
+    """List all categories, or create a category."""
+
+    queryset = Category.objects.filter(is_deleted=False).all()
+    serializer_class = PostSerializer
+
+
+class TagsList(viewsets.ModelViewSet):
+    """List all tags, or create a tag."""
+
+    queryset = Tag.objects.filter(is_deleted=False).all()
+    serializer_class = PostSerializer
+
+
 def get_user_id():  # **************** must complete ****************
     """Retrieve user ID."""
     user_id = 1
@@ -77,13 +92,13 @@ def posts_list(request):
 
 
 @api_view(["GET", "PUT", "DELETE"])
-def post_detail(request, val):
+def post_detail(request, post_id_or_title):
     """Retrieve, update or delete a post."""
     try:
-        if isinstance(val, str):
-            post = Post.objects.get(title=val)
-        elif uuid.UUID(str(val)):
-            post = Post.objects.get(id=val)
+        if isinstance(post_id_or_title, str):
+            post = Post.objects.get(title=post_id_or_title)
+        elif uuid.UUID(str(post_id_or_title)):
+            post = Post.objects.get(id=post_id_or_title)
     except Post.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Post with your value Dose Not Exist!"},
@@ -106,13 +121,13 @@ def post_detail(request, val):
 
 
 @api_view(["POST", "DELETE"])
-def post_bookmark(request, val):
+def post_bookmark(request, post_id_or_title):
     """Bookmark a post or Delete a bookmark."""
     try:
-        if isinstance(val, str):
-            post = Post.objects.get(title=val)
-        elif uuid.UUID(str(val)):
-            post = Post.objects.get(id=val)
+        if isinstance(post_id_or_title, str):
+            post = Post.objects.get(title=post_id_or_title)
+        elif uuid.UUID(str(post_id_or_title)):
+            post = Post.objects.get(id=post_id_or_title)
     except Post.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Post with your value Dose Not Exist!"},
@@ -129,13 +144,13 @@ def post_bookmark(request, val):
 
 
 @api_view(["POST"])
-def new_post_tag(request, val):
+def new_post_tag(request, post_id_or_title):
     """Create a new tag for a post."""
     try:
-        if isinstance(val, str):
-            post = Post.objects.get(title=val)
-        elif uuid.UUID(str(val)):
-            post = Post.objects.get(id=val)
+        if isinstance(post_id_or_title, str):
+            post = Post.objects.get(title=post_id_or_title)
+        elif uuid.UUID(str(post_id_or_title)):
+            post = Post.objects.get(id=post_id_or_title)
     except Post.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Post with your value Dose Not Exist!"},
@@ -155,13 +170,13 @@ def new_post_tag(request, val):
 
 
 @api_view(["DELETE"])
-def delete_post_tag(request, val1, val2):
+def delete_post_tag(request, post_id_or_title, tag_id_or_name):
     """Delete a tag from a post."""
     try:
-        if isinstance(val1, str):
-            post = Post.objects.get(title=val1)
-        elif uuid.UUID(str(val1)):
-            post = Post.objects.get(id=val1)
+        if isinstance(post_id_or_title, str):
+            post = Post.objects.get(title=post_id_or_title)
+        elif uuid.UUID(str(post_id_or_title)):
+            post = Post.objects.get(id=post_id_or_title)
     except Post.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Post with your value Dose Not Exist!"},
@@ -169,10 +184,10 @@ def delete_post_tag(request, val1, val2):
         )
 
     try:
-        if isinstance(val2, str):
-            tag = Tag.objects.get(name=val2)
-        elif uuid.UUID(str(val2)):
-            tag = Tag.objects.get(id=val2)
+        if isinstance(tag_id_or_name, str):
+            tag = Tag.objects.get(name=tag_id_or_name)
+        elif uuid.UUID(str(tag_id_or_name)):
+            tag = Tag.objects.get(id=tag_id_or_name)
     except Tag.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Tag with your value Dose Not Exist!"},
@@ -194,15 +209,15 @@ def delete_post_tag(request, val1, val2):
 
 
 @api_view(["GET"])
-def tag_posts(request, val):
+def tag_posts(request, tag_id_or_name):
     """List all posts with one tag."""
     if request.method == "GET":
 
         try:
-            if isinstance(val, str):
-                tag = Tag.objects.get(name=val)
-            elif uuid.UUID(str(val)):
-                tag = Tag.objects.get(id=val)
+            if isinstance(tag_id_or_name, str):
+                tag = Tag.objects.get(name=tag_id_or_name)
+            elif uuid.UUID(str(tag_id_or_name)):
+                tag = Tag.objects.get(id=tag_id_or_name)
         except Tag.DoesNotExist:
             return Response(
                 {"errorCode": "404", "message": "Tag with your value Dose Not Exist!"},
@@ -223,15 +238,15 @@ def tag_posts(request, val):
 
 
 @api_view(["POST"])
-def new_post_star(request, val):
+def new_post_star(request, post_id_or_title):
     """Create a star for a post."""
     if request.method == "POST":
 
         try:
-            if isinstance(val, str):
-                post = Post.objects.get(title=val)
-            elif uuid.UUID(str(val)):
-                post = Post.objects.get(id=val)
+            if isinstance(post_id_or_title, str):
+                post = Post.objects.get(title=post_id_or_title)
+            elif uuid.UUID(str(post_id_or_title)):
+                post = Post.objects.get(id=post_id_or_title)
         except Post.DoesNotExist:
             return Response(
                 {"errorCode": "404", "message": "Post with your value Dose Not Exist!"},
@@ -280,30 +295,14 @@ def user_bookmarks(request):
         return Response(serializer.data)
 
 
-@api_view(["GET", "POST"])
-def tags_list(request):
-    """List all tags, or create a tag."""
-    if request.method == "GET":
-        tags = Tag.objects.all()
-        serializer = TagSerializer(tags, many=True)
-        return Response(serializer.data)
-
-    elif request.method == "POST":
-        serializer = TagSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(["GET"])
-def tag_detail(request, val):
+def tag_detail(request, tag_id_or_name):
     """Retrieve a tag."""
     try:
-        if isinstance(val, str):
-            tag = Tag.objects.get(name=val)
-        elif uuid.UUID(str(val)):
-            tag = Tag.objects.get(id=val)
+        if isinstance(tag_id_or_name, str):
+            tag = Tag.objects.get(name=tag_id_or_name)
+        elif uuid.UUID(str(tag_id_or_name)):
+            tag = Tag.objects.get(id=tag_id_or_name)
     except Tag.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Tag with your value Dose Not Exist!"},
@@ -315,30 +314,14 @@ def tag_detail(request, val):
         return Response(serializer.data)
 
 
-@api_view(["GET", "POST"])
-def categories_list(request):
-    """List all categories, or create a new category."""
-    if request.method == "GET":
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data)
-
-    elif request.method == "POST":
-        serializer = CategorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(["GET", "PUT", "DELETE"])
-def category_detail(request, val):
+def category_detail(request, category_id_or_name):
     """Retrieve, update or delete a category."""
     try:
-        if isinstance(val, str):
-            category = Category.objects.get(name=val)
-        elif uuid.UUID(str(val)):
-            category = Category.objects.get(id=val)
+        if isinstance(category_id_or_name, str):
+            category = Category.objects.get(name=category_id_or_name)
+        elif uuid.UUID(str(category_id_or_name)):
+            category = Category.objects.get(id=category_id_or_name)
     except Category.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Category with your value Dose Not Exist!"},
@@ -362,11 +345,10 @@ def category_detail(request, val):
 
 
 @api_view(["GET", "DELETE"])
-def comment_detail(request, val):
+def comment_detail(request, comment_id):
     """Retrieve or delete a comment."""
     try:
-        if uuid.UUID(str(val)):
-            comment = Comment.objects.get(id=val)
+        comment = Comment.objects.get(id=comment_id)
     except Comment.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Comment with your value Dose Not Exist!"},
@@ -383,11 +365,10 @@ def comment_detail(request, val):
 
 
 @api_view(["PUT"])
-def comment_approve(request, val):
+def comment_approve(request, comment_id):
     """Approve or disapprove a comment for a post."""
     try:
-        if uuid.UUID(str(val)):
-            comment = Comment.objects.get(id=val)
+        comment = Comment.objects.get(id=comment_id)
     except Comment.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Comment with your value Dose Not Exist!"},
@@ -403,13 +384,13 @@ def comment_approve(request, val):
 
 
 @api_view(["GET", "POST"])
-def post_comment(request, val):
+def post_comment(request, post_id_or_title):
     """Retrieve all comments or Create a new comment for a post."""
     try:
-        if isinstance(val, str):
-            post = Post.objects.get(title=val)
-        elif uuid.UUID(str(val)):
-            post = Post.objects.get(id=val)
+        if isinstance(post_id_or_title, str):
+            post = Post.objects.get(title=post_id_or_title)
+        elif uuid.UUID(str(post_id_or_title)):
+            post = Post.objects.get(id=post_id_or_title)
     except Post.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Post with your value Dose Not Exist!"},
@@ -433,13 +414,13 @@ def post_comment(request, val):
 
 
 @api_view(["POST"])
-def new_comment_reply(request, val1, val2):
+def new_comment_reply(request, post_id_or_title, comment_id):
     """Create a new comment's reply for a post."""
     try:
-        if isinstance(val1, str):
-            post = Post.objects.get(title=val1)
-        elif uuid.UUID(str(val1)):
-            post = Post.objects.get(id=val1)
+        if isinstance(post_id_or_title, str):
+            post = Post.objects.get(title=post_id_or_title)
+        elif uuid.UUID(str(post_id_or_title)):
+            post = Post.objects.get(id=post_id_or_title)
     except Post.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Post with your value Dose Not Exist!"},
@@ -447,10 +428,7 @@ def new_comment_reply(request, val1, val2):
         )
 
     try:
-        if isinstance(val2, str):
-            comment = Comment.objects.get(title=val2)
-        elif uuid.UUID(str(val2)):
-            comment = Comment.objects.get(id=val2)
+        comment = Comment.objects.get(id=comment_id)
     except Comment.DoesNotExist:
         return Response(
             {"errorCode": "404", "message": "Post with your value Dose Not Exist!"},
@@ -460,7 +438,7 @@ def new_comment_reply(request, val1, val2):
     if request.method == "POST":
         data = request.data
         data["post"] = post.id
-        data["replyTo"] = comment.id
+        data["reply_to"] = comment.id
         data["user"] = get_user_id()
         serializer = CommentSerializer(data=data)
         if serializer.is_valid():

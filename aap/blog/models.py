@@ -71,7 +71,9 @@ class Comment(Base):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.CharField(max_length=500)
-    replyTo = models.ForeignKey("self", on_delete=models.CASCADE, null=True, default="")
+    reply_to = models.ForeignKey(
+        "self", on_delete=models.CASCADE, null=True, default=""
+    )
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     is_approved = models.BooleanField(default=False)
 
