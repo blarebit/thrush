@@ -113,3 +113,9 @@ STAR_MAX_VALUE = int(os.environ.get("AAP_STAR_MAX_VALUE", "10"))
 # Set Default value for "category" field in "post" table when
 # category record deleted in "category" table
 DELETED_POST_CATEGORY_NAME = "__deleted_category"
+
+# Pagination
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
