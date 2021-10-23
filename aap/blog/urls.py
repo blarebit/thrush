@@ -62,7 +62,7 @@ urlpatterns = [
     # Create a new star for a post <id | title>.
     path("posts/<uuid:post_id_or_title>/stars/", new_post_star),
     path("posts/<str:post_id_or_title>/stars/", new_post_star),
-    # Retrieve all comments or Create a new comment for a post <id | title>.
+    # List all comments or Create a new comment for a post <id | title>.
     path("posts/<uuid:post_id_or_title>/comments/", post_comment),
     path("posts/<str:post_id_or_title>/comments/", post_comment),
     # Create a new comment's reply for a post <id | title>.
@@ -72,9 +72,9 @@ urlpatterns = [
     path("comments/<uuid:comment_id>", comment_detail),
     # Approve or disapprove a comment for a post
     path("comments/<uuid:comment_id>/approve/", comment_approve),
-    # Retrieve all stars who a user <user-id> gives.
+    # List all stars who a user <user-id> gives.
     path("stars", user_stars),
-    # Retrieve all user's <user-id> bookmarks.
+    # List all user's <user-id> bookmarks.
     path("bookmarks/", user_bookmarks),
     path("", include(router.urls)),
 ]
