@@ -22,7 +22,9 @@ class Category(Base):
     """Category model implementation."""
 
     name = models.CharField(max_length=75)
-    parent = models.CharField(max_length=32, default="")
+    parent = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.DO_NOTHING
+    )
 
     def __str__(self):
         if self.is_deleted:
