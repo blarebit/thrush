@@ -4,8 +4,7 @@ import uuid
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-
-from django.db.models import Avg
+from rest_framework.pagination import PageNumberPagination
 
 from .models import Post, Tag, Star, Category, Comment
 from .serializers import (
@@ -15,34 +14,6 @@ from .serializers import (
     CategorySerializer,
     CommentSerializer,
 )
-
-
-def full_posts(post):
-    """Get together post fields relations and retrieve data as json."""
-    post_serializer = PostSerializer(post)
-
-    stars = Star.objects.filter(post=post.id)
-    average_stars = Star.objects.filter(post=post.id).aggregate(Avg("star"))[
-        "star__avg"
-    ]
-    star_serializer = StarSerializer(stars, many=True)
-
-    result = post_serializer.data
-    result.update({"stars": star_serializer.data})
-    result.update({"average_stars": average_stars if average_stars else 0})
-
-    comments = Comment.objects.filter(post=post.id, is_approved=True)
-    comments_count = comments.count()
-    result.update({"commentsCount": comments_count})
-    if comments:
-        comment_serializer = CommentSerializer(comments, many=True)
-        result.update({"comments": comment_serializer.data})
-    else:
-        result.update({"comments": comments})
-
-    result = {str(post.id): result}
-
-    return result
 
 
 def get_user_id():  # **************** must complete ****************
@@ -56,17 +27,12 @@ def get_user_id():  # **************** must complete ****************
 def posts_list(request):
     """List all posts, or create a new post."""
     if request.method == "GET":
+
+        paginator = PageNumberPagination()
         posts = Post.objects.all().exclude(is_deleted=True)
-
-        result = {}
-
-        for post in posts:
-            if result == {}:
-                result = full_posts(post)
-            else:
-                result.update(full_posts(post))
-
-        return Response(result)
+        context = paginator.paginate_queryset(posts, request)
+        serializer = PostSerializer(context, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     elif request.method == "POST":
         serializer = PostSerializer(data=request.data)
@@ -91,7 +57,7 @@ def post_detail(request, post_id_or_title):
         )
 
     if request.method == "GET":
-        return Response(full_posts(post))
+        return Response(PostSerializer(post).data)
 
     elif request.method == "PUT":
         serializer = PostSerializer(post, data=request.data, partial=True)
@@ -211,17 +177,11 @@ def tag_posts(request, tag_id_or_name):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        posts = Post.objects.filter(tags=tag.id)
-
-        result = {}
-
-        for post in posts:
-            if result == {}:
-                result = full_posts(post)
-            else:
-                result.update(full_posts(post))
-
-        return Response(result)
+        paginator = PageNumberPagination()
+        posts = Post.objects.filter(tags=tag.id).exclude(is_deleted=True)
+        context = paginator.paginate_queryset(posts, request)
+        serializer = PostSerializer(context, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(["POST"])
@@ -253,42 +213,51 @@ def new_post_star(request, post_id_or_title):
 @api_view(["GET"])
 def user_stars(request):
     """Retrieve all stars from specific user."""
-    try:
-        stars = Star.objects.filter(user=get_user_id())
-    except Star.DoesNotExist:
-        return Response(
-            {"errorCode": "404", "message": "Star with your value Dose Not Exist!"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
     if request.method == "GET":
-        serializer = StarSerializer(stars, many=True)
-        return Response(serializer.data)
+
+        paginator = PageNumberPagination()
+        try:
+            stars = Star.objects.filter(user=get_user_id()).exclude(is_deleted=True)
+        except Star.DoesNotExist:
+            return Response(
+                {"errorCode": "404", "message": "Star with your value Dose Not Exist!"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        context = paginator.paginate_queryset(stars, request)
+        serializer = StarSerializer(context, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(["GET"])
 def user_bookmarks(request):
     """Retrieve all specific user's bookmarks."""
-    try:
-        bookmarks = Post.objects.filter(bookmark=get_user_id())
-    except Post.DoesNotExist:
-        return Response(
-            {"errorCode": "404", "message": "Star with your value Dose Not Exist!"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
     if request.method == "GET":
-        serializer = PostSerializer(bookmarks, many=True)
-        return Response(serializer.data)
+
+        paginator = PageNumberPagination()
+        try:
+            bookmarks = Post.objects.filter(bookmark=get_user_id()).exclude(
+                is_deleted=True
+            )
+        except Post.DoesNotExist:
+            return Response(
+                {"errorCode": "404", "message": "Star with your value Dose Not Exist!"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        context = paginator.paginate_queryset(bookmarks, request)
+        serializer = PostSerializer(context, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(["GET", "POST"])
 def tags_list(request):
     """List all tags, or create a tag."""
     if request.method == "GET":
-        tags = Tag.objects.all()
-        serializer = TagSerializer(tags, many=True)
-        return Response(serializer.data)
+
+        paginator = PageNumberPagination()
+        tags = Tag.objects.all().exclude(is_deleted=True)
+        context = paginator.paginate_queryset(tags, request)
+        serializer = TagSerializer(context, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     elif request.method == "POST":
         serializer = TagSerializer(data=request.data)
@@ -321,9 +290,12 @@ def tag_detail(request, tag_id_or_name):
 def categories_list(request):
     """List all categories, or create a new category."""
     if request.method == "GET":
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data)
+
+        paginator = PageNumberPagination()
+        categories = Category.objects.all().exclude(is_deleted=True)
+        context = paginator.paginate_queryset(categories, request)
+        serializer = CategorySerializer(context, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     elif request.method == "POST":
         serializer = CategorySerializer(data=request.data)
@@ -435,9 +407,12 @@ def post_comment(request, post_id_or_title):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "GET":
-        comments = Comment.objects.filter(post=post.id)
-        serializer = CommentSerializer(comments, many=True)
-        return Response(serializer.data)
+
+        paginator = PageNumberPagination()
+        comments = Comment.objects.filter(post=post.id).exclude(is_deleted=True)
+        context = paginator.paginate_queryset(comments, request)
+        serializer = CommentSerializer(context, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(["POST"])
@@ -472,10 +447,3 @@ def new_comment_reply(request, post_id_or_title, comment_id):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-"""
-class SnippetList(generics.ListCreateAPIView):
-    queryset = Snippet.objects.all()
-    serializer_class = SnippetSerializer
-"""
