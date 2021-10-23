@@ -1,10 +1,9 @@
 """Blog views."""
 import uuid
 
-from rest_framework import viewsets
-from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
 
 from django.db.models import Avg
 
@@ -46,20 +45,6 @@ def full_posts(post):
     return result
 
 
-class CategoriesList(viewsets.ModelViewSet):
-    """List all categories, or create a category."""
-
-    queryset = Category.objects.filter(is_deleted=False).all()
-    serializer_class = PostSerializer
-
-
-class TagsList(viewsets.ModelViewSet):
-    """List all tags, or create a tag."""
-
-    queryset = Tag.objects.filter(is_deleted=False).all()
-    serializer_class = PostSerializer
-
-
 def get_user_id():  # **************** must complete ****************
     """Retrieve user ID."""
     user_id = 1
@@ -71,7 +56,7 @@ def get_user_id():  # **************** must complete ****************
 def posts_list(request):
     """List all posts, or create a new post."""
     if request.method == "GET":
-        posts = Post.objects.all()
+        posts = Post.objects.all().exclude(is_deleted=True)
 
         result = {}
 
@@ -116,8 +101,10 @@ def post_detail(request, post_id_or_title):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
-        post.is_deleted = True
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = CategorySerializer(post, data={"is_deleted": True}, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST", "DELETE"])
@@ -295,6 +282,22 @@ def user_bookmarks(request):
         return Response(serializer.data)
 
 
+@api_view(["GET", "POST"])
+def tags_list(request):
+    """List all tags, or create a tag."""
+    if request.method == "GET":
+        tags = Tag.objects.all()
+        serializer = TagSerializer(tags, many=True)
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        serializer = TagSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(["GET"])
 def tag_detail(request, tag_id_or_name):
     """Retrieve a tag."""
@@ -312,6 +315,22 @@ def tag_detail(request, tag_id_or_name):
     if request.method == "GET":
         serializer = TagSerializer(tag)
         return Response(serializer.data)
+
+
+@api_view(["GET", "POST"])
+def categories_list(request):
+    """List all categories, or create a new category."""
+    if request.method == "GET":
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "PUT", "DELETE"])
@@ -340,8 +359,12 @@ def category_detail(request, category_id_or_name):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
-        category.is_deleted = True
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = CategorySerializer(
+            category, data={"is_deleted": True}, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["GET", "DELETE"])
@@ -360,8 +383,12 @@ def comment_detail(request, comment_id):
         return Response(serializer.data)
 
     elif request.method == "DELETE":
-        comment.is_deleted = True
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = CategorySerializer(
+            comment, data={"is_deleted": True}, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["PUT"])
@@ -445,3 +472,10 @@ def new_comment_reply(request, post_id_or_title, comment_id):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+"""
+class SnippetList(generics.ListCreateAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+"""

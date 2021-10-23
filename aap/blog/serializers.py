@@ -23,9 +23,6 @@ class CommentSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     """Post data serializer."""
 
-    tags = TagSerializer(read_only=True, many=True)
-    comments = CommentSerializer(read_only=True, many=True)
-
     class Meta:
         model = Post
         fields = "__all__"

@@ -6,13 +6,13 @@ from rest_framework import routers
 from .views import (
     posts_list,
     post_detail,
-    CategoriesList,
+    categories_list,
     category_detail,
     user_stars,
     comment_approve,
 )
 from .views import (
-    TagsList,
+    tags_list,
     tag_detail,
     comment_detail,
     tag_posts,
@@ -28,15 +28,15 @@ from .views import (
 )
 
 router = routers.DefaultRouter()
-# List all categories, or create a new category.
-router.register("categories/", CategoriesList, basename="categories")
-# List all tags, or create a tag.
-router.register("tags/", TagsList, basename="tags")
 
 urlpatterns = [
+    # List all categories, or create a new category.
+    path("categories/", categories_list),
     # Retrieve, update or delete a category <id | name>.
     path("categories/<uuid:category_id_or_name>", category_detail),
     path("categories/<str:category_id_or_name>", category_detail),
+    # List all tags, or create a tag.
+    path("tags/", tags_list),
     # Retrieve a tag <id | name>.
     path("tags/<uuid:tag_id_or_name>", tag_detail),
     path("tags/<str:tag_id_or_name>", tag_detail),
