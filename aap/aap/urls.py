@@ -18,13 +18,14 @@ schema_view = get_schema_view(
         license=openapi.License(name="BSD License"),
     ),
     public=True,
-    permission_classes=[permissions.AllowAny],
+    permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
-    # Blog package URL
-    path("blog/", include("blog.urls"), name="blog"),
+    # Blog package URL.
+    path("blog/", include(("blog.urls", "blog"))),
+    path("account/", include(("account.urls", "account"))),
 
     # Swagger.
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
 ]

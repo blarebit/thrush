@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework.authtoken",
     "drf_yasg",
+    "account",
     "blog",
 ]
 
@@ -68,6 +70,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "aap.wsgi.application"
+
+APPEND_SLASH = True
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -108,17 +112,42 @@ STATIC_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Account app settings.
+
+DEFAULT_USER_GROUP = "users"
+LOGIN_URL = "/account/login"
+LOGOUT_URL = "/account/logout"
+
 # Blog app settings.
 
 STAR_MIN_VALUE = int(os.environ.get("AAP_STAR_MIN_VALUE", "1"))
 STAR_MAX_VALUE = int(os.environ.get("AAP_STAR_MAX_VALUE", "10"))
 
 # Set Default value for "category" field in "post" table when
-# category record deleted in "category" table
+# category record deleted in "category" table.
 DELETED_POST_CATEGORY_NAME = "__deleted_category"
 
 # Pagination
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 10,
+    "PAGE_SIZE": int(os.environ.get("AAP_PAGE_SIZE", 10)),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
+}
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Basic": {
+            "type": "basic"
+        },
+        "DRF Token": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+        }
+    }
 }

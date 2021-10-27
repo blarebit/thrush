@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
-from base.models import Base
+from base.models import Base, AbstractBase
 
 
 class Tag(Base):
@@ -49,13 +49,13 @@ class Post(Base):
     content = models.TextField(null=False)
     slug = models.CharField(max_length=1024, unique=True)
     tags = models.ManyToManyField(Tag, related_name="tags")
-    bookmark = models.ManyToManyField(User, related_name="bookmarks", null=True)
-    image = models.ImageField()
+    bookmarks = models.ManyToManyField(User, related_name="bookmarks", null=True)
+    image = models.URLField()
     is_draft = models.BooleanField(default=False)
     previous = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.DO_NOTHING
     )
-    publisher = models.ForeignKey(
+    user = models.ForeignKey(
         User, related_name="publisher", on_delete=models.CASCADE
     )
     category = models.ForeignKey(
@@ -99,7 +99,7 @@ class Comment(Base):
         return self.message
 
 
-class Star(Base):
+class Star(AbstractBase):
     """Star (posts) model implementation."""
 
     star = models.PositiveSmallIntegerField(
@@ -113,6 +113,7 @@ class Star(Base):
 
     class Meta:
         ordering = ["created_at"]
+        unique_together = [("user", "post")]
 
     def __str__(self):
         return f"{self.post.title}[{self.star}]"
