@@ -21,3 +21,7 @@ test:
 .PHONY: package
 package:
 	python -m build
+
+.PHONY: image
+image:
+	docker build -t aap -f deploy/docker/Dockerfile .
