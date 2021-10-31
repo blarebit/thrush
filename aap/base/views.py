@@ -12,6 +12,10 @@ class BaseViewSet(viewsets.GenericViewSet):
     alternative_lookup_field = None
 
     def get_object(self):
+        """DRF built-in method.
+
+        Implement "alternative lookup field" feature.
+        """
         if not self.alternative_lookup_field:
             return super().get_object()
 

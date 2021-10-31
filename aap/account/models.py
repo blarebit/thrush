@@ -15,10 +15,7 @@ class Profile(models.Model):
 
     class Meta:
         db_table = "auth_profile"
-        unique_together = [
-            ["user", "mobile"],
-            ["user", "phone"]
-        ]
+        unique_together = [["user", "mobile"], ["user", "phone"]]
 
     def __str__(self):
         return self.user.get_full_name()
@@ -27,7 +24,10 @@ class Profile(models.Model):
 @receiver(signals.post_save, sender=User)
 def add_user_in_default_group(instance, created, **_):
     """Add a new user in default group."""
-    if created and not instance.groups.filter(name=settings.DEFAULT_USER_GROUP).exists():
+    if (
+        created
+        and not instance.groups.filter(name=settings.DEFAULT_USER_GROUP).exists()
+    ):
         default_group = Group.objects.get_or_create(name=settings.DEFAULT_USER_GROUP)
         instance.groups.add(default_group[0].id)
         instance.save()

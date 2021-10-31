@@ -11,9 +11,7 @@ class ContentTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ContentType
-        read_only_fields = (
-            "name",
-        )
+        read_only_fields = ("name",)
         fields = (
             "name",
             "app_label",
@@ -48,7 +46,9 @@ class GroupSerializer(serializers.ModelSerializer):
     """Group serializer."""
 
     url = serializers.HyperlinkedIdentityField(view_name="account:group-detail")
-    permissions = serializers.PrimaryKeyRelatedField(queryset=Permission.objects.all(), many=True)
+    permissions = serializers.PrimaryKeyRelatedField(
+        queryset=Permission.objects.all(), many=True
+    )
 
     class Meta:
         model = Group
@@ -77,9 +77,7 @@ class UserSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name="account:user-detail")
     groups = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), many=True)
     permissions = serializers.PrimaryKeyRelatedField(
-        queryset=Permission.objects.all(),
-        many=True,
-        source="user_permissions"
+        queryset=Permission.objects.all(), many=True, source="user_permissions"
     )
     profile = ProfileSerializer(many=False)
 
@@ -102,6 +100,10 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, attrs):
+        """DRF built-in method.
+
+        Make sure an email is unique.
+        """
         if User.objects.filter(email=attrs["email"]).exists():
             raise exceptions.ValidationError(
                 detail={"message": "A user with that email already exists."},
@@ -110,6 +112,10 @@ class UserSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
+        """DRF built-in method.
+
+        Handles groups, permissions, and profile data.
+        """
         profile = validated_data.pop("profile")
         groups = validated_data.pop("groups")
         permissions = validated_data.pop("user_permissions")
@@ -135,24 +141,21 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
-            "username",
-            "email",
-            "password"
-        )
-        extra_kwargs = {
-            "email": {
-                "required": True
-            }
-        }
+        fields = ("username", "email", "password")
+        extra_kwargs = {"email": {"required": True}}
 
     def to_representation(self, instance):
+        """DRF built-in method."""
         return {
             "username": instance.username,
             "email": instance.email,
         }
 
     def validate(self, attrs):
+        """DRF built-in method.
+
+        Make sure an email is unique.
+        """
         if User.objects.filter(email=attrs["email"]).exists():
             raise exceptions.ValidationError(
                 detail={"message": "A user with that email already exists."},

@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = literal_eval(os.environ.get("AAP_DEBUG", "True"))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = literal_eval(os.environ.get("ALLOWED_HOSTS"))
 
 # Application definition
 
@@ -131,23 +131,21 @@ DELETED_POST_CATEGORY_NAME = "__deleted_category"
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": int(os.environ.get("AAP_PAGE_SIZE", 10)),
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ]
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
 }
 
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
-        "Basic": {
-            "type": "basic"
-        },
+        "Basic": {"type": "basic"},
         "DRF Token": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header",
-        }
+        },
     }
 }

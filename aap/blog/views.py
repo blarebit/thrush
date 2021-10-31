@@ -19,7 +19,7 @@ class TagViewSet(
     BaseViewSet,
     generics.ListCreateAPIView,
     generics.RetrieveAPIView,
-    generics.CreateAPIView
+    generics.CreateAPIView,
 ):
     """Tag view set."""
 
@@ -30,9 +30,7 @@ class TagViewSet(
 
 
 class CategoryViewSet(
-    BaseViewSet,
-    generics.ListCreateAPIView,
-    generics.RetrieveUpdateDestroyAPIView
+    BaseViewSet, generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIView
 ):
     """Category view set."""
 
@@ -43,9 +41,7 @@ class CategoryViewSet(
 
 
 class PostViewSet(
-    BaseViewSet,
-    generics.ListCreateAPIView,
-    generics.RetrieveUpdateDestroyAPIView
+    BaseViewSet, generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIView
 ):
     """Post view set."""
 
@@ -54,14 +50,16 @@ class PostViewSet(
     serializer_class = PostSerializer
 
     def create(self, request, *args, **kwargs):
+        """DRF built-in method.
+
+        Attach user ID into a request.
+        """
         request.data["user"] = self.request.user.id
         return super().create(request, *args, **kwargs)
 
 
 class CommentViewSet(
-    BaseViewSet,
-    generics.ListCreateAPIView,
-    generics.RetrieveUpdateDestroyAPIView
+    BaseViewSet, generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIView
 ):
     """Comment view set."""
 
@@ -70,14 +68,26 @@ class CommentViewSet(
     serializer_class = CommentSerializer
 
     def get_queryset(self):
+        """DRF built-in method.
+
+        Only fetch post-related comments.
+        """
         return Comment.objects.filter(post=self.kwargs["post_pk"])
 
     def create(self, request, *args, **kwargs):
+        """DRF built-in method.
+
+        Attach user ID and post ID into a request.
+        """
         request.data["user"] = self.request.user.id
         request.data["post"] = kwargs.pop("post_pk")
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
+        """DRF built-in method.
+
+        Attach user ID and post ID into a request.
+        """
         request.data["user"] = self.request.user.id
         request.data["post"] = kwargs.pop("post_pk")
         return super().update(request, *args, **kwargs)
@@ -94,8 +104,14 @@ class StarViewSet(
     serializer_class = StarSerializer
 
     def create(self, request, *args, **kwargs):
+        """DRF built-in method.
+
+        Attach user ID into a request. Also, handle updating a star.
+        """
         request.data["user"] = self.request.user.id
-        current_star = Star.objects.filter(user=self.request.user, post=request.data["post"]).first()
+        current_star = Star.objects.filter(
+            user=self.request.user, post=request.data["post"]
+        ).first()
         if not current_star:
             return super().create(request, *args, **kwargs)
 
@@ -104,11 +120,7 @@ class StarViewSet(
         return Response(StarSerializer(instance=current_star).data)
 
 
-class BookmarkViewSet(
-    BaseViewSet,
-    generics.ListCreateAPIView,
-    generics.DestroyAPIView
-):
+class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyAPIView):
     """Bookmark view set."""
 
     permission_classes = [permissions.IsAuthenticated]
@@ -116,29 +128,36 @@ class BookmarkViewSet(
     serializer_class = BookmarkSerializer
 
     def get_queryset(self):
+        """DRF built-in method.
+
+        Only fetch bookmark-related posts.
+        """
         return Post.objects.filter(bookmarks=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        """DRF built-in method.
+
+        Attach user ID into a request.
+        """
         request.data["user"] = self.request.user.id
         try:
             self.get_queryset().get(id=request.data["post"])
             return Response(
                 data={"message": "the post already bookmarked."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         except Post.DoesNotExist:
             post = Post.objects.get(id=request.data["post"])
             post.bookmarks.add(self.request.user)
-            # post.bookmarks.save()
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
+        """DRF built-in method."""
         try:
             post = Post.objects.get(id=kwargs["pk"])
         except Post.DoesNotExist:
             return Response(
-                data={"message": "post not found"},
-                status=status.HTTP_404_NOT_FOUND
+                data={"message": "post not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
         if post.bookmarks.filter(bookmarks__bookmarks=self.request.user).exists():
@@ -146,6 +165,5 @@ class BookmarkViewSet(
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(
-            data={"message": "bookmark not found"},
-            status=status.HTTP_404_NOT_FOUND
+            data={"message": "bookmark not found"}, status=status.HTTP_404_NOT_FOUND
         )

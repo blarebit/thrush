@@ -55,9 +55,7 @@ class Post(Base):
     previous = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.DO_NOTHING
     )
-    user = models.ForeignKey(
-        User, related_name="publisher", on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(User, related_name="publisher", on_delete=models.CASCADE)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET(get_deleted_post_category),

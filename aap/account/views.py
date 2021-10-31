@@ -63,9 +63,14 @@ class LoginView(views.APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        user = authenticate(username=serializer.data["username"], password=serializer.data["password"])
+        user = authenticate(
+            username=serializer.data["username"], password=serializer.data["password"]
+        )
         if not user:
-            return Response(data={"message": "invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                data={"message": "invalid username or password"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         token = Token.objects.get_or_create(user=user)
         return Response(data={"token": token[0].key})
@@ -96,19 +101,24 @@ class ChangePasswordView(views.APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if (
-                serializer.data.get("username") and
-                request.user.username != serializer.data["username"] and
-                not request.user.has_perm("auth.change_user")
+            serializer.data.get("username")
+            and request.user.username != serializer.data["username"]
+            and not request.user.has_perm("auth.change_user")
         ):
-            return Response({"message": "permission denied"}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"message": "permission denied"}, status=status.HTTP_403_FORBIDDEN
+            )
 
         if not request.user.has_perm("auth.change_user"):
             user = authenticate(
                 username=serializer.data.get("username") or request.user,
-                password=serializer.data["old_password"]
+                password=serializer.data["old_password"],
             )
             if not user:
-                return Response(data={"message": "invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response(
+                    data={"message": "invalid username or password"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
         else:
             if serializer.data.get("username"):
                 user = User.objects.get(username=serializer.data["username"])
@@ -126,6 +136,10 @@ class MyProfileView(generics.RetrieveAPIView, generics.UpdateAPIView):
     serializer_class = UserSerializer
 
     def get_object(self):
+        """DRF built-in method.
+
+        Only return the current logged-in user object.
+        """
         return self.request.user
 
 

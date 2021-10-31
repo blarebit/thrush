@@ -27,9 +27,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        read_only_fields = (
-            "is_approved",
-        )
+        read_only_fields = ("is_approved",)
         fields = (
             # "url",
             "id",
@@ -37,22 +35,17 @@ class CommentSerializer(serializers.ModelSerializer):
             "message",
             "reply_to",
             "post",
-            "is_approved"
+            "is_approved",
         )
-        user_fields = (
-            "id",
-            "url",
-            "email",
-            "first_name",
-            "last_name"
-        )
+        user_fields = ("id", "url", "email", "first_name", "last_name")
 
     def to_representation(self, instance):
+        """DRF built-in method."""
         serialized_data = super().to_representation(instance)
         serialized_data["user"] = UserSerializer(
             instance=instance.user,
             many=False,
-            context={"request": self.context["request"]}
+            context={"request": self.context["request"]},
         ).data
         for user_field in serialized_data["user"].copy():
             if user_field not in self.Meta.user_fields:
@@ -65,11 +58,7 @@ class StarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Star
-        fields = (
-            "star",
-            "user",
-            "post"
-        )
+        fields = ("star", "user", "post")
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
@@ -79,9 +68,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = (
-            "post",
-        )
+        fields = ("post",)
 
 
 class CategorySerializer(serializers.ModelSerializer):
