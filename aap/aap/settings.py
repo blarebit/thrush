@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = literal_eval(os.environ.get("AAP_DEBUG", "True"))
 
-ALLOWED_HOSTS = literal_eval(os.environ.get("ALLOWED_HOSTS", "['localhost']"))
+ALLOWED_HOSTS = literal_eval(os.environ.get("AAP_ALLOWED_HOSTS", "['localhost', '127.0.0.1']"))
 
 # Application definition
 
