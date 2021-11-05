@@ -16,6 +16,9 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -28,7 +31,9 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = literal_eval(os.environ.get("AAP_DEBUG", "True"))
 
-ALLOWED_HOSTS = literal_eval(os.environ.get("AAP_ALLOWED_HOSTS", "['localhost', '127.0.0.1']"))
+ALLOWED_HOSTS = literal_eval(
+    os.environ.get("AAP_ALLOWED_HOSTS", "['localhost', '127.0.0.1']")
+)
 
 # Application definition
 
@@ -42,6 +47,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "account",
     "blog",
+    "file_manager",
 ]
 
 MIDDLEWARE = [

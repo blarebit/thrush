@@ -143,20 +143,24 @@ class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyA
         try:
             self.get_queryset().get(id=request.data["post"])
             return Response(
-                data={"status_code": status.HTTP_400_BAD_REQUEST,
-                      "code": status.HTTP_400_BAD_REQUEST,
-                      "detail": "The post already bookmarked."},
+                data={
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                    "code": status.HTTP_400_BAD_REQUEST,
+                    "detail": "The post already bookmarked.",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Post.DoesNotExist:
             post = Post.objects.get(id=request.data["post"])
             post.bookmarks.add(self.request.user)
         return Response(
-                data={"status_code": status.HTTP_201_CREATED,
-                      "code": status.HTTP_201_CREATED,
-                      "detail": "Bookmark created."},
-                status=status.HTTP_201_CREATED
-            )
+            data={
+                "status_code": status.HTTP_201_CREATED,
+                "code": status.HTTP_201_CREATED,
+                "detail": "Bookmark created.",
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
     def destroy(self, request, *args, **kwargs):
         """DRF built-in method."""
@@ -164,24 +168,30 @@ class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyA
             post = Post.objects.get(id=kwargs["pk"])
         except Post.DoesNotExist:
             return Response(
-                data={"status_code": status.HTTP_404_NOT_FOUND,
-                      "code": status.HTTP_404_NOT_FOUND,
-                      "detail": "Post not found."},
-                status=status.HTTP_404_NOT_FOUND
+                data={
+                    "status_code": status.HTTP_404_NOT_FOUND,
+                    "code": status.HTTP_404_NOT_FOUND,
+                    "detail": "Post not found.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         if post.bookmarks.filter(bookmarks__bookmarks=self.request.user).exists():
             post.bookmarks.remove(self.request.user)
             return Response(
-                data={"status_code": status.HTTP_204_NO_CONTENT,
-                      "code": status.HTTP_204_NO_CONTENT,
-                      "detail": "Bookmark removed."},
-                status=status.HTTP_204_NO_CONTENT
+                data={
+                    "status_code": status.HTTP_204_NO_CONTENT,
+                    "code": status.HTTP_204_NO_CONTENT,
+                    "detail": "Bookmark removed.",
+                },
+                status=status.HTTP_204_NO_CONTENT,
             )
 
         return Response(
-            data={"status_code": status.HTTP_404_NOT_FOUND,
-                  "code": status.HTTP_404_NOT_FOUND,
-                  "detail": "Bookmark not found."},
-            status=status.HTTP_404_NOT_FOUND
+            data={
+                "status_code": status.HTTP_404_NOT_FOUND,
+                "code": status.HTTP_404_NOT_FOUND,
+                "detail": "Bookmark not found.",
+            },
+            status=status.HTTP_404_NOT_FOUND,
         )
