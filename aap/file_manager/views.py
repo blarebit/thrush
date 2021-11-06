@@ -323,4 +323,4 @@ class FileManager(APIView):
             # print path to all filenames.
             for filename in filenames:
                 dir_tree.append(os.path.join(dir_name, filename))
-        return Response({"dir_list1": dir_tree})
+        return Response({"dir_tree": dir_tree})
