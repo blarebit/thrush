@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "account",
     "blog",
     "file_manager",
+    "page",
 ]
 
 MIDDLEWARE = [
@@ -118,22 +119,8 @@ STATIC_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Account app settings.
+# DRF settings.
 
-DEFAULT_USER_GROUP = "users"
-LOGIN_URL = "/account/login"
-LOGOUT_URL = "/account/logout"
-
-# Blog app settings.
-
-STAR_MIN_VALUE = int(os.environ.get("AAP_STAR_MIN_VALUE", "1"))
-STAR_MAX_VALUE = int(os.environ.get("AAP_STAR_MAX_VALUE", "10"))
-
-# Set Default value for "category" field in "post" table when
-# category record deleted in "category" table.
-DELETED_POST_CATEGORY_NAME = "__deleted_category"
-
-# Pagination
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": int(os.environ.get("AAP_PAGE_SIZE", 10)),
@@ -145,6 +132,8 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Swagger settings.
+
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
         "Basic": {"type": "basic"},
@@ -155,3 +144,22 @@ SWAGGER_SETTINGS = {
         },
     }
 }
+
+# Account component settings.
+
+DEFAULT_USER_GROUP = "users"
+LOGIN_URL = "/account/login"
+LOGOUT_URL = "/account/logout"
+
+# Blog component settings.
+
+STAR_MIN_VALUE = int(os.environ.get("AAP_STAR_MIN_VALUE", "1"))
+STAR_MAX_VALUE = int(os.environ.get("AAP_STAR_MAX_VALUE", "10"))
+
+# Set Default value for "category" field in "post" table when
+# category record deleted in "category" table.
+DELETED_POST_CATEGORY_NAME = "__deleted_category"
+
+# Page component settings.
+
+DELETED_MENU_GROUP_NAME = "__deleted_group_menu"

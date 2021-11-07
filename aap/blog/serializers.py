@@ -24,7 +24,6 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         read_only_fields = ("is_approved",)
         fields = (
-            # "url",
             "id",
             "user",
             "message",
@@ -89,8 +88,7 @@ class PostSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
     stars_average = serializers.SerializerMethodField()
     bookmarks_count = serializers.SerializerMethodField()
-    # user = serializers.PrimaryKeyRelatedField(source="user", read_only=True)
-    
+
     class Meta:
         model = Post
         fields = (
@@ -133,6 +131,6 @@ class PostSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Override tag IDs with tag details."""
         serialized_data = super().to_representation(instance)
+        serialized_data["publisher"] = serialized_data.pop("user")
         serialized_data["tags"] = TagSerializer(instance=instance.tags, many=True).data
-        # serialized_data = {"status": 200, "results": serialized_data}
         return serialized_data

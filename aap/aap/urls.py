@@ -10,28 +10,29 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
-from file_manager import FileManager
-
 schema_view = get_schema_view(
     openapi.Info(
-        title="Snippets API",
+        title="AAP",
         default_version="v1",
-        description="Test description",
-        terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="contact@snippets.local"),
-        license=openapi.License(name="BSD License"),
+        description="Admin Access Point API",
+        terms_of_service="",
+        contact=openapi.Contact(email="info@blarebit.com"),
+        license=openapi.License(name=""),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
+    # Account.
     path("account/", include(("account.urls", "account"))),
-    # File manager package URL.
-    path("FileManager/", FileManager.as_view()),
-    path("FileManager/<path:url_path>", FileManager.as_view()),
-    # Blog package URL.
+
+    # Blog.
     path("blog/", include(("blog.urls", "blog"))),
+
+    # Page.
+    path("page/", include(("page.urls", "page"))),
+
     # Swagger.
     path(
         "swagger/",
