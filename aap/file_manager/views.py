@@ -2,6 +2,8 @@
 import os
 import shutil
 
+from pathlib import Path
+
 from django.conf import settings
 from django.http import JsonResponse
 
@@ -9,6 +11,8 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+
+from file_manager.forms import UploadFileForm
 
 
 class FileManager(APIView):
@@ -237,10 +241,21 @@ class FileManager(APIView):
                 )
             if correct_path[1] == 201:
                 file_destination = os.path.join(correct_path[0]["path"], f.name)
-                with open(file_destination, "wb+") as destination:
-                    for chunk in f.chunks():
-                        destination.write(chunk)
-                return JsonResponse({"file_destination": file_destination}, status=201)
+                form = UploadFileForm(request.POST, request.FILES)
+                if form.is_valid():
+                    with open(file_destination, "wb+") as destination:
+                        for chunk in f.chunks():
+                            destination.write(chunk)
+                    return JsonResponse({"file_destination": file_destination}, status=201)
+                else:
+                    return Response(
+                        data={
+                            "status_code": status.HTTP_403_FORBIDDEN,
+                            "code": status.HTTP_403_FORBIDDEN,
+                            "detail": "Forbidden file type.",
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
             else:
                 return JsonResponse(correct_path[0], status=correct_path[1])
         else:
@@ -312,15 +327,27 @@ class FileManager(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+    def __get_directory_list(self, path, dir_tree):
+        for a in Path(path).iterdir():
+            if a.is_dir():
+                dir_tree.append({"path": a.as_posix(),
+                                 "name": a.name,
+                                 "size": 0,
+                                 "type": "directory",
+                                 })
+                self.__get_directory_list(a.as_posix(), dir_tree)
+
+            else:
+                dir_tree.append({"path": a.as_posix(),
+                                 "name": a.name,
+                                 "size": os.stat(a.as_posix()).st_size,
+                                 "type": "file",
+                                 })
+        return dir_tree
+
     def get(self, request, url_path="", format=None):
+        """Retrieve a List of all files and directories from url_path."""
         dir_tree = []
         path = self.__get_correct_path(url_path)
-        for dir_name, dir_names, filenames in os.walk(path):
-            # print path to all subdirectories first.
-            for sub_dir_name in dir_names:
-                dir_tree.append(os.path.join(dir_name, sub_dir_name))
-
-            # print path to all filenames.
-            for filename in filenames:
-                dir_tree.append(os.path.join(dir_name, filename))
-        return Response({"dir_tree": dir_tree})
+        result = self.__get_directory_list(path, dir_tree)
+        return Response({"result": result})

@@ -10,7 +10,6 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
-from file_manager import FileManager
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -28,8 +27,8 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("account/", include(("account.urls", "account"))),
     # File manager package URL.
-    path("FileManager/", FileManager.as_view()),
-    path("FileManager/<path:url_path>", FileManager.as_view()),
+    path("file_manager/", include(("file_manager.urls", "file_manager"))),
+
     # Blog package URL.
     path("blog/", include(("blog.urls", "blog"))),
     # Swagger.

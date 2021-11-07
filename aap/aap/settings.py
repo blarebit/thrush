@@ -129,6 +129,12 @@ LOGOUT_URL = "/account/logout"
 STAR_MIN_VALUE = int(os.environ.get("AAP_STAR_MIN_VALUE", "1"))
 STAR_MAX_VALUE = int(os.environ.get("AAP_STAR_MAX_VALUE", "10"))
 
+# File Manager app settings.
+
+MEDIA_ALLOWED_EXTENSIONS = literal_eval(
+    os.environ.get("AAP_MEDIA_ALLOWED_EXTENSIONS", "[]")
+)
+
 # Set Default value for "category" field in "post" table when
 # category record deleted in "category" table.
 DELETED_POST_CATEGORY_NAME = "__deleted_category"
