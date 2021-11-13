@@ -1,3 +1,4 @@
+"""File manager package URL."""
 from django.urls import path
 
 from file_manager import FileManager

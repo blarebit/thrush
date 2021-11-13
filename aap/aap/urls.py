@@ -13,24 +13,30 @@ from rest_framework import permissions
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Snippets API",
+        title="AAP",
         default_version="v1",
-        description="Test description",
-        terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="contact@snippets.local"),
-        license=openapi.License(name="BSD License"),
+        description="Admin Access Point API",
+        terms_of_service="",
+        contact=openapi.Contact(email="info@blarebit.com"),
+        license=openapi.License(name=""),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
+    # Account.
     path("account/", include(("account.urls", "account"))),
+
     # File manager package URL.
     path("file_manager/", include(("file_manager.urls", "file_manager"))),
 
-    # Blog package URL.
+    # Blog.
     path("blog/", include(("blog.urls", "blog"))),
+
+    # Page.
+    path("page/", include(("page.urls", "page"))),
+
     # Swagger.
     path(
         "swagger/",
