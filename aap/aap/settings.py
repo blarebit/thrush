@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "blog",
     "page",
     "file",
+    "slider",
 ]
 
 # It will be overridden by 'page' app.

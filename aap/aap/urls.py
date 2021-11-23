@@ -33,6 +33,8 @@ urlpatterns = [
     path("file/", include(("file.urls", "file"))),
     # Page.
     path("page/", include(("page.urls", "page"))),
+    # Slider.
+    path("slider/", include(("slider.urls", "slider"))),
     # Swagger.
     path(
         "swagger/",
