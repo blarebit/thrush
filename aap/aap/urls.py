@@ -3,15 +3,12 @@
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
 """
-from django.urls import path, include
-from django.conf.urls.static import static
 from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path, include
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
-from rest_framework import permissions, routers
-
-from slider.views import SliderAPIView
-
+from rest_framework import permissions
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -26,21 +23,23 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
-router = routers.DefaultRouter()
-router.register(r'slider', SliderAPIView)
 
 urlpatterns = [
-    path("", include(router.urls)),
     # Account.
     path("account/", include(("account.urls", "account"))),
+
     # Blog.
     path("blog/", include(("blog.urls", "blog"))),
+
     # Media (file/directory) manager.
     path("file/", include(("file.urls", "file"))),
+
     # Page.
     path("page/", include(("page.urls", "page"))),
-    # Slider.
-    # path("slider/", include(("slider.urls", "slider"))),
+
+    # Slideshow.
+    path("slideshow/", include(("slideshow.urls", "slideshow"))),
+
     # Swagger.
     path(
         "swagger/",

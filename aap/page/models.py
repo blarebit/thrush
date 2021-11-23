@@ -14,12 +14,18 @@ class Page(Base):
 
 
 class GroupMenu(Base):
-    """Group menu model."""
+    """Group menu model implementation."""
 
     name = models.CharField(max_length=50, unique=True)
     description = models.CharField(max_length=150, blank=True, null=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.name
 
 
 def get_delete_menu_group():
@@ -28,7 +34,7 @@ def get_delete_menu_group():
 
 
 class Menu(Base):
-    """Menu model."""
+    """Menu model implementation."""
 
     label = models.CharField(max_length=50, unique=True)
     description = models.CharField(max_length=150, blank=True, null=True)
@@ -40,3 +46,10 @@ class Menu(Base):
         ContentType, blank=True, null=True, on_delete=models.DO_NOTHING
     )
     link = models.CharField(max_length=1024)
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.label
