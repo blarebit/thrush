@@ -16,6 +16,8 @@ class Slide(Base):
     order = models.PositiveSmallIntegerField(null=False, unique=True)
     link = models.URLField()
     is_approved = models.BooleanField(default=False)
+    start_time = models.DateTimeField()
+    expire_time = models.DateTimeField(null=True)
 
     class Meta:
         ordering = ["order"]

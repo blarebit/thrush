@@ -21,4 +21,6 @@ class SlideSerializer(serializers.ModelSerializer):
             "created_at",
             "modified_at",
             "is_approved",
+            "start_time",
+            "expire_time",
         )

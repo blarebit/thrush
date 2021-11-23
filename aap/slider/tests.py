@@ -1,1 +1,1 @@
-"""Blog tests."""
+"""Slide tests."""
