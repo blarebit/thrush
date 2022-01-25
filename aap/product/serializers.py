@@ -1,16 +1,19 @@
 """Product serializers."""
 from rest_framework import serializers
+from base.models import Tag, Category, Product
 from product.models import (
     AudioType,
     # AudioBook,
     Publisher,
-    BookAuthor,
+    Author,
     AudioIndex,
-    BookSpeaker,
+    Speaker,
     CompatibleDevice,
-    Tag,
-    Category,
-    Product,
+    # Tag,
+    # Category,
+    # Product,
+    AudioBook,
+    PaperBook,
 )
 
 
@@ -49,7 +52,7 @@ class BookAuthorSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name="product:book_author-detail")
 
     class Meta:
-        model = BookAuthor
+        model = Author
         fields = (
             "url",
             "id",
@@ -63,7 +66,7 @@ class BookSpeakerSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name="product:book_speaker-detail")
 
     class Meta:
-        model = BookSpeaker
+        model = Speaker
         fields = (
             "url",
             "id",
@@ -119,13 +122,24 @@ class AudioIndexSerializer(serializers.ModelSerializer):
         )
 
 
-class BookmarkSerializer(serializers.ModelSerializer):
+class AudioBookBookmarkSerializer(serializers.ModelSerializer):
     """Bookmark serializer."""
 
     product = serializers.PrimaryKeyRelatedField(source="id", read_only=True)
 
     class Meta:
-        model = Product
+        model = AudioBook
+        fields = ("product",)
+        ref_name = "product"
+
+
+class PaperBookBookmarkSerializer(serializers.ModelSerializer):
+    """Bookmark serializer."""
+
+    product = serializers.PrimaryKeyRelatedField(source="id", read_only=True)
+
+    class Meta:
+        model = PaperBook
         fields = ("product",)
         ref_name = "product"
 
@@ -153,7 +167,22 @@ class AudioBookSerializer(serializers.ModelSerializer):
     bookmarks_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Product
+        model = AudioBook
+        fields = "__all__"
+
+    def get_bookmarks_count(self, obj):
+        """Get product's bookmarks count."""
+        return obj.bookmarks.count()
+
+
+class PaperBookSerializer(serializers.ModelSerializer):
+    """Audio book serializer."""
+
+    url = serializers.HyperlinkedIdentityField(view_name="product:paper_book-detail")
+    bookmarks_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PaperBook
         fields = "__all__"
 
     def get_bookmarks_count(self, obj):

@@ -3,7 +3,7 @@ from base.views import BaseViewSet
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from .models import Category, Comment, Post, Star, Tag
+from .models import Category, PostComment, Post, PostStar, Tag
 from .serializers import (
     BookmarkSerializer,
     CategorySerializer,
@@ -66,13 +66,13 @@ class CommentViewSet(
     """Comment view set."""
 
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Comment.objects.filter(is_deleted=False, is_approved=True)
+    queryset = PostComment.objects.filter(is_deleted=False, is_approved=True)
     serializer_class = CommentSerializer
     filterset_fields = ("user", "is_approved", "post")
 
     def get_queryset(self):
         """Only fetch post-related comments."""
-        return Comment.objects.filter(post=self.kwargs["post_pk"])
+        return PostComment.objects.filter(post=self.kwargs["post_pk"])
 
     def create(self, request, *args, **kwargs):
         """Attach user ID and post ID into a request."""
@@ -94,14 +94,14 @@ class StarViewSet(
     """Star view set."""
 
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Star.objects.all()
+    queryset = PostStar.objects.all()
     serializer_class = StarSerializer
     http_method_names = ["post"]
 
     def create(self, request, *args, **kwargs):
         """Attach user ID into a request. Also, handle updating a star."""
         request.data["user"] = self.request.user.id
-        current_star = Star.objects.filter(
+        current_star = PostStar.objects.filter(
             user=self.request.user, post=request.data["post"]
         ).first()
         if not current_star:

@@ -3,7 +3,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 
 from account.serializers import UserSerializer, UserGeneralInfoSerializer
-from .models import Post, Tag, Star, Category, Comment
+from .models import Post, Tag, PostStar, Category, PostComment
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """Comment serializer."""
 
     class Meta:
-        model = Comment
+        model = PostComment
         read_only_fields = ("is_approved",)
         fields = (
             "id",
@@ -52,7 +52,7 @@ class StarSerializer(serializers.ModelSerializer):
     """Star serializer."""
 
     class Meta:
-        model = Star
+        model = PostStar
         fields = ("star", "user", "post")
 
 

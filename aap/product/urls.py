@@ -8,22 +8,26 @@ from .views import (
     AudioIndexViewSet,
     AudioTypeViewSet,
     BookAuthorViewSet,
-    BookmarkViewSet,
+    AudioBookBookmarkViewSet,
+    PaperBookBookmarkViewSet,
     BookSpeakerViewSet,
     CategoryViewSet,
     CompatibleDeviceViewSet,
     PublisherViewSet,
     TagViewSet,
+    PaperBookViewSet,
 )
 
 router = routers.DefaultRouter()
 router.register("tags", TagViewSet, basename="tag")
 router.register("categories", CategoryViewSet, basename="category")
-router.register("bookmarks", BookmarkViewSet, basename="bookmark")
+router.register("audio_book_bookmarks", AudioBookBookmarkViewSet, basename="audio_book_bookmark")
+router.register("paper_book_bookmarks", PaperBookBookmarkViewSet, basename="paper_book_bookmark")
 router.register("audio_types", AudioTypeViewSet, basename="audio_type")
 router.register("book_speakers", BookSpeakerViewSet, basename="book_speaker")
 router.register("publishers", PublisherViewSet, basename="publisher")
 router.register("audio_books", AudioBookViewSet, basename="audio_book")
+router.register("paper_books", PaperBookViewSet, basename="paper_book")
 router.register("audio_indices", AudioIndexViewSet, basename="audio_index")
 router.register("book_authors", BookAuthorViewSet, basename="book_author")
 router.register(

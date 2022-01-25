@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_yasg",
     "account",
+    "base",
     "blog",
     "page",
     "file",

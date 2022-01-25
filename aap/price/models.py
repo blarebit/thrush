@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.db import models
 from base.models import Base
-from product.models import Product
+from base.models import Product
 
 
 class Price(Base):
