@@ -3,22 +3,36 @@ from .audio_book import (
     AudioBookViewSet,
     AudioIndexViewSet,
     AudioTypeViewSet,
-    BookAuthorViewSet,
     BookSpeakerViewSet,
     CompatibleDeviceViewSet,
-    PublisherViewSet,
 )
-from .product import BookmarkViewSet, CategoryViewSet, TagViewSet
+from .product import (
+    BookAuthorViewSet,
+    PublisherViewSet,
+    TranslatorViewSet,
+)
+from .Paper_book import PaperBookViewSet
+from .product import (
+    AudioBookBookmarkViewSet,
+    PaperBookBookmarkViewSet,
+    CategoryViewSet,
+    TagViewSet,
+    ProductViewSet,
+)
 
 __all__ = (
     "AudioTypeViewSet",
     "TagViewSet",
     "CategoryViewSet",
     "PublisherViewSet",
-    "BookmarkViewSet",
+    "AudioBookBookmarkViewSet",
+    "PaperBookBookmarkViewSet",
     "AudioBookViewSet",
+    "PaperBookViewSet",
     "AudioIndexViewSet",
     "BookAuthorViewSet",
     "BookSpeakerViewSet",
     "CompatibleDeviceViewSet",
+    "TranslatorViewSet",
+    "ProductViewSet"
 )

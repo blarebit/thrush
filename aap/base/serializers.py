@@ -1,6 +1,8 @@
 """Base serializers."""
 from django.conf import settings
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
+from .models import Tag, Category
 
 
 class ContentTypeLinkModelSerializer(serializers.ModelSerializer):
@@ -18,3 +20,31 @@ class ContentTypeLinkModelSerializer(serializers.ModelSerializer):
                 instance=instance, context={"request": self.context["request"]}
             ).data
         return obj.link
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    """Category serializer."""
+
+    url = serializers.HyperlinkedIdentityField(view_name="product:category-detail")
+
+    class Meta:
+        model = Category
+        fields = (
+            "url",
+            "id",
+            "name",
+            "parent",
+        )
+        ref_name = "category"
+
+
+class TagSerializer(serializers.ModelSerializer):
+    """Tag serializer."""
+
+    class Meta:
+        model = Tag
+        fields = (
+            "id",
+            "name",
+        )
+        ref_name = "tag"

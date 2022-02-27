@@ -3,26 +3,16 @@ from django.db.models import Avg
 from rest_framework import serializers
 
 from account.serializers import UserSerializer, UserGeneralInfoSerializer
-from .models import Post, Tag, Star, Category, Comment
-
-
-class TagSerializer(serializers.ModelSerializer):
-    """Tag serializer."""
-
-    class Meta:
-        model = Tag
-        fields = (
-            "id",
-            "name",
-        )
-        ref_name = "blog"
+# from .models import Post, Tag, PostStar, Category, PostComment
+from .models import Post, PostStar, PostComment
+from base.serializers import TagSerializer
 
 
 class CommentSerializer(serializers.ModelSerializer):
     """Comment serializer."""
 
     class Meta:
-        model = Comment
+        model = PostComment
         read_only_fields = ("is_approved",)
         fields = (
             "id",
@@ -52,7 +42,7 @@ class StarSerializer(serializers.ModelSerializer):
     """Star serializer."""
 
     class Meta:
-        model = Star
+        model = PostStar
         fields = ("star", "user", "post")
 
 
@@ -67,20 +57,20 @@ class BookmarkSerializer(serializers.ModelSerializer):
         ref_name = "blog"
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    """Category serializer."""
-
-    url = serializers.HyperlinkedIdentityField(view_name="blog:category-detail")
-
-    class Meta:
-        model = Category
-        fields = (
-            "url",
-            "id",
-            "name",
-            "parent",
-        )
-        ref_name = "blog"
+# class CategorySerializer(serializers.ModelSerializer):
+#     """Category serializer."""
+#
+#     url = serializers.HyperlinkedIdentityField(view_name="blog:category-detail")
+#
+#     class Meta:
+#         model = Category
+#         fields = (
+#             "url",
+#             "id",
+#             "name",
+#             "parent",
+#         )
+#         ref_name = "blog"
 
 
 class PostSerializer(serializers.ModelSerializer):

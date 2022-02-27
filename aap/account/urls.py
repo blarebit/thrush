@@ -12,10 +12,13 @@ from .views import (
     ChangePasswordView,
     MyProfileView,
     RegisterView,
+    AddressViewSet,
+    Verify,
 )
 
 router = routers.DefaultRouter()
 router.register("users", UserViewSet, basename="user")
+router.register("address", AddressViewSet, basename="address")
 router.register("groups", GroupViewSet, basename="group")
 router.register("permissions", PermissionViewSet, basename="permission")
 router.register("content_types", ContentTypeViewSet, basename="content_type")
@@ -27,4 +30,5 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout"),
     path("register/", RegisterView.as_view(), name="register"),
     path("password/", ChangePasswordView.as_view(), name="change_password"),
+    path("verify/", Verify.as_view(), name="verify"),
 ]

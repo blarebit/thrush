@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.db import models
 from base.models import Base
-from product.models import Product
+from shop.product.models import Product
 
 
 class Price(Base):
@@ -13,7 +13,7 @@ class Price(Base):
     inventory = models.IntegerField()
     price = models.PositiveIntegerField()
     discount = models.PositiveSmallIntegerField(default=0)
-    start = models.DateTimeField(default=datetime.utcnow(), blank=True, null=True)
+    start = models.DateTimeField(default=datetime.utcnow, blank=True, null=True)
     end = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):

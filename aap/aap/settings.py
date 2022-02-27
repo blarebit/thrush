@@ -16,7 +16,7 @@ from pathlib import Path
 
 from django.core.validators import get_available_image_extensions
 
-from .apps import all_serializers
+# from .apps import all_serializers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -56,12 +56,18 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_yasg",
     "account",
+    "base",
     "blog",
     "page",
     "file",
     "slideshow",
-    "product",
-    "price",
+    # "product",
+    # "price",
+    # "cart",
+    # "shop.price",
+    "shop.cart",
+    "shop.product",
+    "shop.payment",
 ]
 
 # Note: it will be overridden by 'page' app.
@@ -121,6 +127,10 @@ DATABASE_ROUTERS = ["aap.libs.DatabaseRouter"]
 
 AUTH_USER_MODEL = "account.User"
 MOBILE_LENGTH = int(os.environ.get("AAP_MOBILE_LENGTH", "13"))
+VERIFY_CODE_LENGTH = int(os.environ.get("AAP_VERIFY_CODE_LENGTH", "6"))
+REDIS_HOST = str(os.environ.get("AAP_REDIS_HOST", "localhost"))
+REDIS_PORT = int(os.environ.get("AAP_REDIS_PORT", "6379"))
+REDIS_PASS = str(os.environ.get("AAP_REDIS_PASS", ""))
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

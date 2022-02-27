@@ -1,23 +1,22 @@
 """Audio book views."""
 from base.views import BaseViewSet
-from product.models import (
+from shop.product.models import (
     AudioBook,
     AudioIndex,
     AudioType,
-    BookAuthor,
-    BookSpeaker,
+    # Author,
+    Speaker,
     CompatibleDevice,
-    Product,
-    Publisher,
+    # Publisher,
 )
-from product.serializers import (
+from shop.product.serializers import (
     AudioBookSerializer,
     AudioIndexSerializer,
     AudioTypeSerializer,
-    BookAuthorSerializer,
+    # BookAuthorSerializer,
     BookSpeakerSerializer,
     CompatibleDeviceSerializer,
-    PublisherSerializer,
+    # PublisherSerializer,
 )
 from rest_framework import generics, permissions
 
@@ -46,38 +45,8 @@ class BookSpeakerViewSet(
     """Book speaker view set."""
 
     permission_classes = [permissions.DjangoModelPermissions]
-    queryset = BookSpeaker.objects.all()
+    queryset = Speaker.objects.all()
     serializer_class = BookSpeakerSerializer
-    alternative_lookup_field = "name"
-    filterset_fields = ("name",)
-
-
-class BookAuthorViewSet(
-    BaseViewSet,
-    generics.ListCreateAPIView,
-    generics.RetrieveAPIView,
-    generics.CreateAPIView,
-):
-    """Book author view set."""
-
-    permission_classes = [permissions.DjangoModelPermissions]
-    queryset = BookAuthor.objects.all()
-    serializer_class = BookAuthorSerializer
-    alternative_lookup_field = "name"
-    filterset_fields = ("name",)
-
-
-class PublisherViewSet(
-    BaseViewSet,
-    generics.ListCreateAPIView,
-    generics.RetrieveAPIView,
-    generics.CreateAPIView,
-):
-    """Publisher view set."""
-
-    permission_classes = [permissions.DjangoModelPermissions]
-    queryset = Publisher.objects.all()
-    serializer_class = PublisherSerializer
     alternative_lookup_field = "name"
     filterset_fields = ("name",)
 
@@ -120,7 +89,7 @@ class AudioBookViewSet(
     """Audio book view set."""
 
     permission_classes = [permissions.DjangoModelPermissions]
-    queryset = Product.objects.all()
+    queryset = AudioBook.objects.all()
     serializer_class = AudioBookSerializer
     alternative_lookup_field = "name"
     filterset_fields = ("name",)

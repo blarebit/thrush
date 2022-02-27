@@ -2,7 +2,15 @@
 import uuid
 
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, viewsets
+from rest_framework import generics, permissions, viewsets
+from .models import (
+    Tag,
+    Category,
+)
+from .serializers import (
+    CategorySerializer,
+    TagSerializer
+)
 
 
 class BaseViewSet(viewsets.GenericViewSet):
@@ -36,3 +44,42 @@ class BaseViewSet(viewsets.GenericViewSet):
         if self.request.method == "GET":
             self.permission_classes = [permissions.AllowAny]
         return super().get_permissions()
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the cart
+        for the currently authenticated user.
+        """
+        user = self.request.user
+
+        if user.is_superuser:
+            return self.queryset.all()
+        else:
+            return self.queryset.filter(user=user)
+
+
+class TagViewSet(
+    BaseViewSet,
+    generics.ListCreateAPIView,
+    generics.RetrieveAPIView,
+    generics.CreateAPIView,
+):
+    """Tag view set."""
+
+    permission_classes = [permissions.DjangoModelPermissions]
+    queryset = Tag.objects.filter(is_deleted=False)
+    serializer_class = TagSerializer
+    alternative_lookup_field = "name"
+    filterset_fields = ("name",)
+
+
+class CategoryViewSet(
+    BaseViewSet, generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIView
+):
+    """Category view set."""
+
+    permission_classes = [permissions.DjangoModelPermissions]
+    queryset = Category.objects.filter(is_deleted=False)
+    serializer_class = CategorySerializer
+    alternative_lookup_field = "name"
+    filterset_fields = ("name",)

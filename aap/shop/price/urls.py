@@ -5,7 +5,7 @@ from rest_framework import routers
 from .views import PriceViewSet
 
 router = routers.DefaultRouter()
-router.register("prices", PriceViewSet, basename="price")
+router.register("", PriceViewSet, basename="price")
 
 urlpatterns = [
     path("", include(router.urls)),

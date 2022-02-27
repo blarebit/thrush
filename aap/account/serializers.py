@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from rest_framework import serializers, exceptions, status
 
-from .models import User
+from .models import User, Address
 
 
 class ContentTypeSerializer(serializers.ModelSerializer):
@@ -63,11 +63,38 @@ class GroupSerializer(serializers.ModelSerializer):
         )
 
 
+class AddressSerializer(serializers.ModelSerializer):
+    """Address serializer."""
+
+    url = serializers.HyperlinkedIdentityField(view_name="account:address-detail")
+
+    class Meta:
+        model = Address
+        fields = (
+            "url",
+            "id",
+            "user",
+            "name",
+            "country",
+            "city",
+            "state",
+            "post_code",
+            "address",
+            "street",
+            "house_number",
+            "floor",
+            "unit",
+        )
+
+
 class UserSerializer(serializers.ModelSerializer):
     """User's profile serializer."""
 
     url = serializers.HyperlinkedIdentityField(view_name="account:user-detail")
     groups = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), many=True)
+    # address = serializers.PrimaryKeyRelatedField(queryset=Address.objects.all(), many=True)
+    # address = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    addresses = AddressSerializer(many=True, read_only=True, source="address_user")
     permissions = serializers.PrimaryKeyRelatedField(
         queryset=Permission.objects.all(), many=True, source="user_permissions"
     )
@@ -84,6 +111,7 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "groups",
+            "addresses",
             "permissions",
             "is_active",
             "last_login",
@@ -193,3 +221,10 @@ class ChangePasswordSerializer(serializers.Serializer):
     username = serializers.CharField(required=False)
     old_password = serializers.CharField()
     new_password = serializers.CharField()
+
+
+# class VerifySerializer(serializers.Serializer):
+#     """Verify serializer."""
+#
+#     username = serializers.CharField()
+#     password = serializers.CharField()

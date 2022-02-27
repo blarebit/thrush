@@ -29,14 +29,15 @@ def fix_path(node_path: str, full_path: bool = False) -> str:
     """Remove based path from a user media path."""
     media_root = settings.MEDIA_ROOT.as_posix()
     # +1 is for removing the first slash.
-    node_path = node_path[node_path.find(media_root) + len(media_root) + 1 :]
+    node_path = node_path[node_path.find(media_root) + len(media_root) + 1:]
     if full_path:
         return urljoin(settings.MEDIA_URL, node_path)
     return node_path
 
 
 def setup_path(fn):
-    """Setup path and update the URL path to a real path.
+    """
+    Setup path and update the URL path to a real path.
 
     Note:
         It will create an empty directory if user doesn't have any.
@@ -139,9 +140,7 @@ def validate_input(fn):
                 action_serializer.is_valid(raise_exception=True)
                 source = path / action_serializer.data["source"]
                 destination = (
-                    path
-                    / action_serializer.data["destination"]
-                    / action_serializer.data["source"]
+                    path / action_serializer.data["destination"] / action_serializer.data["source"]
                 )
                 if not source.resolve().is_relative_to(
                     path
@@ -263,9 +262,7 @@ class FileAPIView(APIView):
         if serializer.data["action"] == "copy":
             source = path / serializer.data["params"]["source"]
             destination = (
-                path
-                / serializer.data["params"]["destination"]
-                / serializer.data["params"]["source"]
+                path / serializer.data["params"]["destination"] / serializer.data["params"]["source"]
             )
             if source.is_file():
                 shutil.copy(source, destination)

@@ -1,4 +1,7 @@
 """Auth views."""
+import random
+import redis
+from django.conf import settings
 from base.permissions import AAPDjangoModelPermissions
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.models import Group, Permission
@@ -9,7 +12,7 @@ from rest_framework import generics, permissions, status, views, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 
-from .models import User
+from .models import User, Address
 from .serializers import (
     ChangePasswordSerializer,
     ContentTypeSerializer,
@@ -18,6 +21,7 @@ from .serializers import (
     PermissionSerializer,
     RegisterSerializer,
     UserSerializer,
+    AddressSerializer,
 )
 
 
@@ -65,6 +69,19 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     filterset_fields = ("name",)
+
+
+class AddressViewSet(viewsets.ModelViewSet):
+    """Address view set."""
+
+    permission_classes = [permissions.IsAuthenticated, AAPDjangoModelPermissions]
+    queryset = Address.objects.all()
+    serializer_class = AddressSerializer
+    filterset_fields = ("country", "city", "state", "post_code", "address", "street", "house_number", "floor", "unit",)
+
+    # def get_queryset(self):
+    #     """Only fetch address-related users."""
+    #     return User.objects.filter(user=self.kwargs["user_pk"])
 
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -174,3 +191,109 @@ class RegisterView(generics.CreateAPIView):
 
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
+
+
+class Verify(views.APIView):
+    """ٰVerify view."""
+
+    redis_host = settings.REDIS_HOST
+    redis_port = settings.REDIS_PORT
+    redis_password = settings.REDIS_PASS
+
+    permission_classes = [permissions.AllowAny]
+
+    # @swagger_auto_schema(request_body=LoginSerializer)
+    # @swagger_auto_schema(request_body="")
+    def get(self, request):
+        """Handle GET method to verify user's email or phone number."""
+        # serializer = LoginSerializer(data=request.data)
+        user_id = self.request.user.id
+        code = random.randint(100000, 999999)
+        verify_it = list(request.query_params.keys())[0]
+
+        if verify_it in ('phone', 'email'):
+            # Redis dictionary data
+            verify_dict = {
+                "user_id": user_id,
+                "code": code,
+                "verify": verify_it,
+            }
+            self.set_redis(verify_dict)
+            self.verify_email(code) if verify_it == 'email' else self.verify_phone(code)
+        elif verify_it == 'code':
+            # Lookup the code in redis and find user_id, then verify it
+            verify_dict = self.get_redis(request.query_params)
+            User.objects.filter(id=user_id).update(
+                'email_verified' if verify_it == 'email' else 'mobile_verified=True'
+            )
+            return Response({"Message": "You are verified!"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"Error": "You just can verify email or phone!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # if not serializer.is_valid():
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        #
+        # user = authenticate(
+        #     username=serializer.data["username"],
+        #     password=serializer.data["password"],
+        # )
+        # if not user:
+        #     return Response(
+        #         data={"message": "invalid username or password"},
+        #         status=status.HTTP_401_UNAUTHORIZED,
+        #     )
+        #
+        # token = Token.objects.get_or_create(user=user)
+        # return Response(data={"token": token[0].key})
+        return Response()
+
+    def verify_email(self, *args):
+        pass
+
+    def verify_phone(self, *args):
+        pass
+
+    def set_redis(self, *args):
+        """Redis Program"""
+
+        # step 3: create the Redis Connection object
+        try:
+
+            # The decode_repsonses flag here directs the client to convert the responses from Redis into Python strings
+            # using the default encoding utf-8.  This is client specific.
+            r = redis.StrictRedis(
+                host=self.redis_host,
+                port=self.redis_port,
+                password=self.redis_password,
+                decode_responses=True
+            )
+
+            # step 4: Set the hello message in Redis
+            # r.set("msg:hello", "Hello Redis!!!")
+            r.set("verify_code:"+str(args[0]["code"]), args[0])
+
+        except Exception as e:
+            return Response({"Error": e}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_redis(self, *args):
+        """Redis Program"""
+
+        # step 3: create the Redis Connection object
+        try:
+
+            # The decode_repsonses flag here directs the client to convert the responses from Redis into Python strings
+            # using the default encoding utf-8.  This is client specific.
+            r = redis.StrictRedis(
+                host=self.redis_host,
+                port=self.redis_port,
+                password=self.redis_password,
+                decode_responses=True
+            )
+
+            # step 5: Retrieve the hello message from Redis
+            # msg = r.get("msg:hello")
+            # print(msg)
+            return r.get("verify_code:"+str(args[0]["code"]))
+
+        except Exception as e:
+            return Response({"Error": e}, status=status.HTTP_400_BAD_REQUEST)
