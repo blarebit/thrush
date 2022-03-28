@@ -1,49 +1,34 @@
 """Account models."""
-# from datetime import datetime
+import random
+
+from base.models import Base
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group
-from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.cache import cache
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
-from django.utils.translation import gettext_lazy as _
 
-from base.models import Base
+from .verification import send_verification_code
 
 
 class User(AbstractUser):
     """Customized version of Django's User model."""
 
-    username = models.CharField(
-        _("username"),
-        max_length=150,
-        unique=True,
-        help_text=_(
-            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
-        ),
-        validators=[UnicodeUsernameValidator()],
-        error_messages={
-            "unique": _("A user with that username already exists."),
-        },
-        blank=True,
-        null=True,
-    )
-    mobile = models.CharField(max_length=settings.MOBILE_LENGTH)
+    is_active = models.BooleanField(default=False)
+    mobile = models.CharField(max_length=settings.MOBILE_LENGTH, unique=True)
     mobile_verified = models.BooleanField(default=False)
     email_verified = models.BooleanField(default=False)
     image = models.URLField()
-    # address = models.ForeignKey(Address, related_name="address_user", on_delete=models.CASCADE, null=True)
-    # is_verified = models.BooleanField(default=False)
-    # verify_code = models.CharField(max_length=settings.VERIFY_CODE_LENGTH)
-    # start_verify = models.DateTimeField(blank=True, null=True),
-    # expire_verify = models.DateTimeField(blank=True, null=True)
+
+    REQUIRED_FIELDS = ["mobile", "password"]
 
     def __str__(self):
         return self.get_full_name()
 
 
 @receiver(signals.post_save, sender=User)
-def add_user_in_default_group(instance, created, **_):
+def user_default_groups(instance, created, **_):
     """Add a new user in default group."""
     if (
         created
@@ -54,12 +39,27 @@ def add_user_in_default_group(instance, created, **_):
         instance.save()
 
 
-# class Address(models.Model):
+@receiver(signals.post_save, sender=User)
+def user_verification_code(instance, created, **_):
+    """Add a new user in default group."""
+    if created:
+        verification_code = str(random.randint(*settings.VERIFICATION_CODE_LENGTH_RANGE))
+        encrypted_verification_code = settings.CRYPTOGRAPHY.encrypt(verification_code.encode())
+        cache.set(
+            encrypted_verification_code,
+            instance.id,
+            settings.VERIFICATION_CODE_LIFE_TIME,
+        )
+        send_verification_code(instance, verification_code, encrypted_verification_code)
+
+
 class Address(Base):
     """Address model"""
 
+    user = models.ForeignKey(
+        User, related_name="address_user", on_delete=models.CASCADE
+    )
     name = models.CharField(max_length=100, null=False, default="home")
-    user = models.ForeignKey(User, related_name="address_user", on_delete=models.CASCADE)
     country = models.CharField(max_length=100, null=False)
     city = models.CharField(max_length=150, null=False)
     state = models.CharField(max_length=150, null=False)
@@ -69,4 +69,10 @@ class Address(Base):
     house_number = models.CharField(max_length=5, null=False)
     floor = models.CharField(max_length=3, null=False)
     unit = models.CharField(max_length=3, null=False)
+    is_default = models.BooleanField(default=True)
 
+    class Meta:
+        unique_together = [("user", "is_default")]
+
+    def __str__(self):
+        return f"{self.name} [{self.is_default}]"

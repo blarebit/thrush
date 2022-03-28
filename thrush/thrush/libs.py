@@ -1,4 +1,4 @@
-"""AAP libraries."""
+"""Thrush libraries."""
 from django.conf import settings
 
 

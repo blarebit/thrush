@@ -18,3 +18,4 @@ class AccountBackend(BaseBackend):
         if not user or not user.check_password(kwargs["password"]):
             return None
         return user
+

@@ -1,11 +1,7 @@
 """Base apps models."""
-import uuid
-
-# from django.utils import timezone
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
-# from account.models import User
 
 
 class BaseManager(models.Manager):
@@ -22,9 +18,6 @@ class BaseManager(models.Manager):
 class AbstractBase(models.Model):
     """Abstract base model implementation."""
 
-    # id = models.UUIDField(  # noqa: A003
-    #     primary_key=True, default=uuid.uuid4, editable=False
-    # )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -76,11 +69,10 @@ class Category(Base):
     parent = models.ForeignKey(
         "self",
         null=True,
+        blank=True,
         related_name="category_parent",
-        # blank=True,
         on_delete=models.DO_NOTHING,
     )
-    # parent = models.BigIntegerField(null=True)
 
     class Meta:
         unique_together = ("name", "parent")
@@ -94,18 +86,17 @@ class Category(Base):
 class BaseComment(Base):
     """Comment model implementation."""
 
-    # user = models.ForeignKey(
-    #     User, related_name="comment_user", on_delete=models.CASCADE
-    # )
+    user = models.ForeignKey(
+        "account.User", related_name="comment_user", on_delete=models.CASCADE
+    )
     message = models.CharField(max_length=500)
     reply_to = models.ForeignKey(
         "self", on_delete=models.CASCADE, null=True, default=""
     )
-    # post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
     is_approved = models.BooleanField(default=False)
 
     class Meta:
-        # abstract = True
+        abstract = True
         ordering = ["created_at"]
 
     def __str__(self):
@@ -114,7 +105,7 @@ class BaseComment(Base):
         return self.message
 
 
-class BaseStar(AbstractBase):
+class BaseStar(models.Model):
     """Star (posts) model implementation."""
 
     star = models.PositiveSmallIntegerField(
@@ -123,13 +114,11 @@ class BaseStar(AbstractBase):
             MaxValueValidator(settings.STAR_MAX_VALUE),
         ]
     )
-    # user = models.ForeignKey(User, related_name="star_user", on_delete=models.CASCADE)
-    # post = models.ForeignKey(Post, related_name="stars", on_delete=models.CASCADE)
 
     class Meta:
-        # abstract = True
+        abstract = True
         ordering = ["created_at"]
-        # unique_together = [("user", "post")]
 
-    # def __str__(self):
-    #     return f"{self.post.title}[{self.star}]"
+    def __str__(self):
+        return f"{self.star}"
+

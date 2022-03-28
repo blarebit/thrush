@@ -1,16 +1,9 @@
 """Base views."""
-import uuid
-
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, viewsets
-from .models import (
-    Tag,
-    Category,
-)
-from .serializers import (
-    CategorySerializer,
-    TagSerializer
-)
+
+from .models import Category, Tag
+from .serializers import CategorySerializer, TagSerializer
 
 
 class BaseViewSet(viewsets.GenericViewSet):
@@ -28,10 +21,10 @@ class BaseViewSet(viewsets.GenericViewSet):
             return super().get_object()
 
         queryset = self.get_queryset()
-        try:
+        if self.kwargs[self.lookup_field].isdigit():
             field = "pk"
-            value = uuid.UUID(self.kwargs[self.lookup_field]).hex
-        except ValueError:
+            value = self.kwargs[self.lookup_field].isdigit()
+        else:
             field = self.alternative_lookup_field
             value = self.kwargs[self.lookup_field]
 
@@ -51,11 +44,8 @@ class BaseViewSet(viewsets.GenericViewSet):
         for the currently authenticated user.
         """
         user = self.request.user
-
-        if user.is_superuser:
-            return self.queryset.all()
-        else:
-            return self.queryset.filter(user=user)
+        # breakpoint()
+        return self.queryset.filter(user=user)
 
 
 class TagViewSet(

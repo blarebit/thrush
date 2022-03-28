@@ -1,5 +1,7 @@
 -r requirements.txt
 
+parameterized
+
 flake8==3.9.2
 flake8-black==0.2.3
 flake8-broken-line==0.3.0

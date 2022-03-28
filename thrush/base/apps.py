@@ -2,7 +2,7 @@
 from django.apps import AppConfig
 from django.conf import settings
 
-from aap.apps import all_serializers
+from thrush.apps import all_serializers
 
 
 class BaseConfig(AppConfig):

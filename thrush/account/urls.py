@@ -1,19 +1,19 @@
 """Auth URLs."""
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework import routers
 
 from .views import (
-    UserViewSet,
-    GroupViewSet,
-    PermissionViewSet,
+    AddressViewSet,
+    ChangePasswordView,
     ContentTypeViewSet,
+    GroupViewSet,
     LoginView,
     LogoutView,
-    ChangePasswordView,
     MyProfileView,
+    PermissionViewSet,
     RegisterView,
-    AddressViewSet,
-    Verify,
+    UserViewSet,
+    VerifyView,
 )
 
 router = routers.DefaultRouter()
@@ -25,10 +25,10 @@ router.register("content_types", ContentTypeViewSet, basename="content_type")
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("me/", MyProfileView.as_view()),
+    path("me/", MyProfileView.as_view(), name="profile"),
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("register/", RegisterView.as_view(), name="register"),
-    path("password/", ChangePasswordView.as_view(), name="change_password"),
-    path("verify/", Verify.as_view(), name="verify"),
+    path("password/", ChangePasswordView.as_view(), name="password"),
+    path("verify/", VerifyView.as_view(), name="verification"),
 ]

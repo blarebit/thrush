@@ -2,7 +2,7 @@
 from rest_framework import permissions
 
 
-class AAPDjangoModelPermissions(permissions.DjangoModelPermissions):
+class ThrushDjangoModelPermissions(permissions.DjangoModelPermissions):
     """Admin Access Point custom model permissions."""
 
     # DRF default permissions map, except the "GET" one which is customized.

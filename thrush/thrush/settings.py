@@ -10,10 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import ast
+import math
 import os
 from ast import literal_eval
 from pathlib import Path
 
+from cryptography.fernet import Fernet
 from django.core.validators import get_available_image_extensions
 
 # from .apps import all_serializers
@@ -21,7 +23,7 @@ from django.core.validators import get_available_image_extensions
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-ENVIRONMENT = os.environ.get("AAP_ENVIRONMENT")
+ENVIRONMENT = os.environ.get("THRUSH_ENVIRONMENT")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -31,12 +33,17 @@ SECRET_KEY = os.environ.get(
     "AAP_SECRET_KEY",
     "django-insecure-&yt8!+ph$6sy+%jq+p-f$=^xz1w%xunu7f4)a7zg&(-+&@sxd0",
 )
+CRYPTOGRAPHY = Fernet(
+    os.environ.get(
+        "AAP_CRYPTOGRAPHY_KEY", "oeCpvSkfcN5qhKttyqg1GJrZCoEQ4p6ZWPh1T3QuDNk="
+    )
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = literal_eval(os.environ.get("AAP_DEBUG", "True"))
+DEBUG = literal_eval(os.environ.get("THRUSH_DEBUG", "True"))
 
 ALLOWED_HOSTS = literal_eval(
-    os.environ.get("AAP_ALLOWED_HOSTS", "['localhost', '127.0.0.1']")
+    os.environ.get("THRUSH_ALLOWED_HOSTS", "['localhost', '127.0.0.1']")
 )
 CORS_ALLOWED_ORIGIN_REGEXES = [
     "http(s)?://.*",
@@ -57,17 +64,13 @@ INSTALLED_APPS = [
     "drf_yasg",
     "account",
     "base",
-    "blog",
-    "page",
-    "file",
-    "slideshow",
-    # "product",
-    # "price",
-    # "cart",
-    # "shop.price",
-    "shop.cart",
-    "shop.product",
-    "shop.payment",
+    # "blog",
+    # "page",
+    # "file",
+    # "slideshow",
+    # "shop.cart",
+    # "shop.product",
+    # "shop.payment",
 ]
 
 # Note: it will be overridden by 'page' app.
@@ -81,7 +84,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
 ]
 
-ROOT_URLCONF = "aap.urls"
+ROOT_URLCONF = "thrush.urls"
 
 TEMPLATES = [
     {
@@ -99,7 +102,7 @@ TEMPLATES = [
     }
 ]
 
-WSGI_APPLICATION = "aap.wsgi.application"
+WSGI_APPLICATION = "thrush.wsgi.application"
 
 APPEND_SLASH = True
 
@@ -113,24 +116,25 @@ DATABASES = {
     },
     "production": {
         "ENGINE": "django.db.backends.postgresql",
-        "HOST": os.environ.get("AAP_DATABASES_PRODUCTION_HOST", "127.0.0.1"),
-        "PORT": int(os.environ.get("AAP_DATABASES_PRODUCTION_PORT", "5432")),
-        "NAME": "aap",
-        "USER": os.environ.get("AAP_DATABASES_PRODUCTION_USER", "postgres"),
-        "PASSWORD": os.environ.get("AAP_DATABASES_PRODUCTION_PASSWORD", "postgres"),
+        "HOST": os.environ.get("THRUSH_DATABASES_PRODUCTION_HOST", "127.0.0.1"),
+        "PORT": int(os.environ.get("THRUSH_DATABASES_PRODUCTION_PORT", "5432")),
+        "NAME": "thrush",
+        "USER": os.environ.get("THRUSH_DATABASES_PRODUCTION_USER", "postgres"),
+        "PASSWORD": os.environ.get("THRUSH_DATABASES_PRODUCTION_PASSWORD", "postgres"),
     },
 }
 
-DATABASE_ROUTERS = ["aap.libs.DatabaseRouter"]
+DATABASE_ROUTERS = ["thrush.libs.DatabaseRouter"]
 
-# Customized models.
+# Cache
+# https://docs.djangoproject.com/en/4.0/topics/cache/
 
-AUTH_USER_MODEL = "account.User"
-MOBILE_LENGTH = int(os.environ.get("AAP_MOBILE_LENGTH", "13"))
-VERIFY_CODE_LENGTH = int(os.environ.get("AAP_VERIFY_CODE_LENGTH", "6"))
-REDIS_HOST = str(os.environ.get("AAP_REDIS_HOST", "localhost"))
-REDIS_PORT = int(os.environ.get("AAP_REDIS_PORT", "6379"))
-REDIS_PASS = str(os.environ.get("AAP_REDIS_PASS", ""))
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.environ.get("THRUSH_REDIS", "redis://127.0.0.1:6379"),
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -153,7 +157,7 @@ AUTHENTICATION_BACKENDS = [
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = os.environ.get("AAP_TIME_ZONE", "UTC")
+TIME_ZONE = os.environ.get("THRUSH_TIME_ZONE", "UTC")
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -161,16 +165,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = os.environ.get("AAP_STATIC_URL", "/static/")
+STATIC_URL = os.environ.get("THRUSH_STATIC_URL", "/static/")
 STATIC_ROOT = BASE_DIR / "static"
 
 # Media files and directories.
 
-MEDIA_URL = os.environ.get("AAP_MEDIA_URL", "/media/")
+MEDIA_URL = os.environ.get("THRUSH_MEDIA_URL", "/media/")
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_ALLOWED_EXTENSIONS = ast.literal_eval(
     os.environ.get(
-        "AAP_MEDIA_ALLOWED_EXTENSIONS", str(get_available_image_extensions())
+        "THRUSH_MEDIA_ALLOWED_EXTENSIONS", str(get_available_image_extensions())
     )
 )
 
@@ -183,7 +187,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": int(os.environ.get("AAP_PAGE_SIZE", 10)),
+    "PAGE_SIZE": int(os.environ.get("THRUSH_PAGE_SIZE", 10)),
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
     ],
@@ -210,15 +214,25 @@ SWAGGER_SETTINGS = {
 
 # Account component settings.
 
+AUTH_USER_MODEL = "account.User"
 DEFAULT_USER_GROUP = "users"
+DEFAULT_USER_GROUP_PERMISSIONS = []
+MOBILE_LENGTH = int(os.environ.get("THRUSH_MOBILE_LENGTH", "13"))
+VERIFICATION_CODE_LENGTH = int(os.environ.get("THRUSH_VERIFY_CODE_LENGTH", "6"))
+VERIFICATION_CODE_LENGTH_RANGE = (
+    math.pow(10, VERIFICATION_CODE_LENGTH - 1),
+    math.pow(10, VERIFICATION_CODE_LENGTH) - 1,
+)
+VERIFICATION_CODE_LIFE_TIME = int(
+    os.environ.get("THRUSH_VERIFY_CODE_LIFE_TIME", 60 * 3)
+)
 LOGIN_URL = "/account/login"
 LOGOUT_URL = "/account/logout"
-DEFAULT_USER_GROUP_PERMISSIONS = []
 
 # Blog component settings.
 
-STAR_MIN_VALUE = int(os.environ.get("AAP_STAR_MIN_VALUE", "1"))
-STAR_MAX_VALUE = int(os.environ.get("AAP_STAR_MAX_VALUE", "10"))
+STAR_MIN_VALUE = int(os.environ.get("THRUSH_STAR_MIN_VALUE", "1"))
+STAR_MAX_VALUE = int(os.environ.get("THRUSH_STAR_MAX_VALUE", "10"))
 
 # Set Default value for "category" field in "post" table when
 # category record deleted in "category" table.

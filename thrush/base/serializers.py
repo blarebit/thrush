@@ -1,8 +1,8 @@
 """Base serializers."""
 from django.conf import settings
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
-from .models import Tag, Category
+
+from .models import Category, Tag
 
 
 class ContentTypeLinkModelSerializer(serializers.ModelSerializer):

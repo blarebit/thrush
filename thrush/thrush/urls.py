@@ -14,12 +14,12 @@ from .views import health_check
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="AAP",
+        title="Thrush",
         default_version="v1",
         description="Admin Access Point API",
         terms_of_service="",
         contact=openapi.Contact(email="info@blarebit.com"),
-        license=openapi.License(name=""),
+        license=openapi.License(name="Apache-2.0"),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
@@ -29,34 +29,43 @@ schema_view = get_schema_view(
 urlpatterns = [
     # Account.
     path("account/", include(("account.urls", "account"))),
+
     # Base.
-    path("base/", include(("base.urls", "base"))),
+    # path("base/", include(("base.urls", "base"))),
+
     # Blog.
-    path("blog/", include(("blog.urls", "blog"))),
+    # path("blog/", include(("blog.urls", "blog"))),
+
     # Cart.
-    path("shop/", include(("shop.cart.urls", "cart"))),
+    # path("shop/", include(("shop.cart.urls", "cart"))),
+
     # Payment.
-    path("shop/", include(("shop.payment.urls", "payment"))),
+    # path("shop/", include(("shop.payment.urls", "payment"))),
+
     # Media (file/directory) manager.
-    path("file/", include(("file.urls", "file"))),
+    # path("file/", include(("file.urls", "file"))),
+
     # Page.
-    path("page/", include(("page.urls", "page"))),
+    # path("page/", include(("page.urls", "page"))),
+
     # Slideshow.
-    path("slideshow/", include(("slideshow.urls", "slideshow"))),
-    # # Product.
-    # path("shop/product/", include(("shop.product.urls", "product"))),
+    # path("slideshow/", include(("slideshow.urls", "slideshow"))),
+
     # Products.
-    path("shop/products/", include(("shop.product.urls", "products"))),
+    # path("shop/products/", include(("shop.product.urls", "products"))),
+
     # # Price.
     # path("shop/price/", include(("shop.price.urls", "price"))),
+
     # Health check.
     path("health-check/", health_check),
+
     # Swagger.
-    path(
-        "swagger/",
-        schema_view.with_ui("swagger", cache_timeout=0),
-        name="schema-swagger-ui",
-    ),
+    # path(
+        # "swagger/",
+        # schema_view.with_ui("swagger", cache_timeout=0),
+        # name="schema-swagger-ui",
+    # ),
 ]
 
 if settings.ENVIRONMENT == "development":

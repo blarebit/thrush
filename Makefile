@@ -1,26 +1,28 @@
+SRC_DIR ?= thrush
+
 .PHONY: new-component
 new-component:
-	cd aap && python manage.py startapp $(app)
-	find aap/ -iname "admin.py" -delete
+	cd $(SRC_DIR) && python manage.py startapp $(app)
+	find $(SRC_DIR)/ -iname "admin.py" -delete
 
 .PHONY: dev
 dev:
-	cd aap && python3 manage.py runserver 8000
+	cd $(SRC_DIR) && python3 manage.py runserver 8000
 
 .PHONY: run
 run:
-	cd aap && ./init.sh
+	cd $(SRC_DIR) && ./init.sh
 
 .PHONY: lint
 lint:
-	flake8 aap/
-	isort -c aap/
-	pylint aap/
-	black --check aap/
+	flake8 $(SRC_DIR)/
+	isort -c $(SRC_DIR)/
+	pylint $(SRC_DIR)/
+	black --check $(SRC_DIR)/
 
 .PHONY: test
 test:
-	python manage.py test
+	cd $(SRC_DIR) && python manage.py test
 
 .PHONY: package
 package:
@@ -28,8 +30,9 @@ package:
 
 .PHONY: image
 image:
-	docker build -t aap -f deploy/docker/Dockerfile .
+	docker build -t thrush -f deploy/docker/Dockerfile .
 
 .PHONY: docker-compose
 docker-compose:
 	docker-compose -f deploy/docker/docker-compose.yaml up
+

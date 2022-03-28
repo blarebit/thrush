@@ -1,11 +1,11 @@
-"""Auth serializers."""
+"""Account serializers."""
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group, Permission
-from django.contrib.auth.models import make_password
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
-from rest_framework import serializers, exceptions, status
+from rest_framework import exceptions, serializers, status
 
-from .models import User, Address
+from .models import Address, User
 
 
 class ContentTypeSerializer(serializers.ModelSerializer):
@@ -84,16 +84,14 @@ class AddressSerializer(serializers.ModelSerializer):
             "house_number",
             "floor",
             "unit",
+            "is_default",
         )
 
 
 class UserSerializer(serializers.ModelSerializer):
     """User's profile serializer."""
 
-    url = serializers.HyperlinkedIdentityField(view_name="account:user-detail")
     groups = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all(), many=True)
-    # address = serializers.PrimaryKeyRelatedField(queryset=Address.objects.all(), many=True)
-    # address = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     addresses = AddressSerializer(many=True, read_only=True, source="address_user")
     permissions = serializers.PrimaryKeyRelatedField(
         queryset=Permission.objects.all(), many=True, source="user_permissions"
@@ -103,7 +101,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         read_ony_fields = ("last_login", "date_joined")
         fields = (
-            "url",
             "id",
             "username",
             "mobile",
@@ -187,7 +184,6 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("username", "mobile", "email", "password")
-        extra_kwargs = {"mobile": {"required": True}}
 
     def to_representation(self, instance):
         """DRF built-in method."""
@@ -198,20 +194,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        """DRF built-in method.
-
-        Make sure an email is unique.
-        """
-        if User.objects.filter(mobile=attrs["mobile"]).exists() or (
-            "username" in attrs
-            and User.objects.filter(username=attrs["username"]).exists()
-        ):
-            raise exceptions.ValidationError(
-                detail={"message": "A user with that email already exists."},
-                code=status.HTTP_400_BAD_REQUEST,
-            )
-        # Encrypt password.
-        attrs["password"] = make_password(attrs["password"])
+        """Customized 'validate' method to encrypt password."""
+        if attrs.get("password"):
+            attrs["password"] = make_password(attrs["password"])
         return super().validate(attrs)
 
 
@@ -222,9 +207,3 @@ class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField()
     new_password = serializers.CharField()
 
-
-# class VerifySerializer(serializers.Serializer):
-#     """Verify serializer."""
-#
-#     username = serializers.CharField()
-#     password = serializers.CharField()
