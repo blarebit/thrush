@@ -1,10 +1,6 @@
 """Account views."""
-import random
-
-import redis
 from base.permissions import ThrushDjangoModelPermissions
 from base.views import BaseViewSet
-from django.conf import settings
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType

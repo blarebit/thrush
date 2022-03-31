@@ -3,7 +3,7 @@ import random
 
 from base.models import Base
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, Group
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.core.cache import cache
 from django.db import models
 from django.db.models import signals
@@ -34,8 +34,8 @@ def user_default_groups(instance, created, **_):
         created
         and not instance.groups.filter(name=settings.DEFAULT_USER_GROUP).exists()
     ):
-        default_group = Group.objects.get_or_create(name=settings.DEFAULT_USER_GROUP)
-        instance.groups.add(default_group[0].id)
+        group = Group.objects.get(name=settings.DEFAULT_USER_GROUP)
+        instance.groups.add(group.id)
         instance.save()
 
 
@@ -43,8 +43,12 @@ def user_default_groups(instance, created, **_):
 def user_verification_code(instance, created, **_):
     """Add a new user in default group."""
     if created:
-        verification_code = str(random.randint(*settings.VERIFICATION_CODE_LENGTH_RANGE))
-        encrypted_verification_code = settings.CRYPTOGRAPHY.encrypt(verification_code.encode())
+        verification_code = str(
+            random.randint(*settings.VERIFICATION_CODE_LENGTH_RANGE)
+        )
+        encrypted_verification_code = settings.CRYPTOGRAPHY.encrypt(
+            verification_code.encode()
+        )
         cache.set(
             encrypted_verification_code,
             instance.id,
