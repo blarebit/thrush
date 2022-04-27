@@ -1,22 +1,23 @@
 """Blog URLs."""
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
 from .views import (
+    BookmarkViewSet,
+    CategoryViewSet,
+    CommentViewSet,
     PostViewSet,
     StarViewSet,
-    CommentViewSet,
-    BookmarkViewSet,
+    TagViewSet,
 )
-from base.views import CategoryViewSet, TagViewSet
 
 router = routers.DefaultRouter()
 router.register("posts", PostViewSet, basename="post")
 router.register("stars", StarViewSet, basename="star")
 router.register("bookmarks", BookmarkViewSet, basename="bookmark")
 router.register("categories", CategoryViewSet, basename="category")
-router.register("tags", CategoryViewSet, basename="tag")
+router.register("tags", TagViewSet, basename="tag")
 
 # Category nested router.
 category_router = nested_routers.NestedDefaultRouter(
@@ -25,9 +26,7 @@ category_router = nested_routers.NestedDefaultRouter(
 category_router.register("posts", PostViewSet, basename="post")
 
 # Tag nested router.
-tag_router = nested_routers.NestedDefaultRouter(
-    router, "tags", lookup="tag"
-)
+tag_router = nested_routers.NestedDefaultRouter(router, "tags", lookup="tag")
 tag_router.register("posts", PostViewSet, basename="post")
 
 # Post nested router.

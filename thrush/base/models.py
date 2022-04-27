@@ -51,44 +51,9 @@ class Base(AbstractBase):
         )
 
 
-class Tag(Base):
-    """Tag model implementation."""
-
-    name = models.CharField(max_length=75, unique=True)
-
-    def __str__(self):
-        if self.is_deleted:
-            return f"{self.name} [deleted]"
-        return self.name
-
-
-class Category(Base):
-    """Category model implementation."""
-
-    name = models.CharField(max_length=75)
-    parent = models.ForeignKey(
-        "self",
-        null=True,
-        blank=True,
-        related_name="category_parent",
-        on_delete=models.DO_NOTHING,
-    )
-
-    class Meta:
-        unique_together = ("name", "parent")
-
-    def __str__(self):
-        if self.is_deleted:
-            return f"{self.name} [deleted]"
-        return self.name
-
-
 class BaseComment(Base):
     """Comment model implementation."""
 
-    user = models.ForeignKey(
-        "account.User", related_name="comment_user", on_delete=models.CASCADE
-    )
     message = models.CharField(max_length=500)
     reply_to = models.ForeignKey(
         "self", on_delete=models.CASCADE, null=True, default=""
@@ -121,4 +86,3 @@ class BaseStar(models.Model):
 
     def __str__(self):
         return f"{self.star}"
-

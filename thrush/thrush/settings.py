@@ -18,10 +18,12 @@ from pathlib import Path
 from cryptography.fernet import Fernet
 from django.core.validators import get_available_image_extensions
 
-# from .apps import all_serializers
+from .apps import all_serializers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# General
 
 ENVIRONMENT = os.environ.get("THRUSH_ENVIRONMENT")
 
@@ -49,6 +51,9 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     "http(s)?://.*",
 ]
 
+FIRST_DAY_OF_WEEK = int(os.environ.get("THRUSH_FIRST_DAY_OF_WEEK", "0"))
+IGNORABLE_404_URLS = ["favicon.ico"]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -64,7 +69,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "account",
     "base",
-    # "blog",
+    "blog",
     # "page",
     # "file",
     # "slideshow",
@@ -136,6 +141,26 @@ CACHES = {
     },
 }
 
+# Email
+# https://docs.djangoproject.com/en/4.0/topics/email/
+
+# # Server
+EMAIL_HOST = os.environ.get("THRUSH_EMAIL_HOST", "")
+EMAIL_PORT = int(os.environ.get("THRUSH_EMAIL_PORT", "25"))
+EMAIL_HOST_USER = os.environ.get("THRUSH_EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("THRUSH_EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = literal_eval(os.environ.get("THRUSH_EMAIL_USE_TLS", "True"))
+EMAIL_USE_SSL = literal_eval(os.environ.get("THRUSH_EMAIL_USE_SSL", "True"))
+EMAIL_TIMEOUT = int(os.environ.get("THRUSH_EMAIL_TIMEOUT", "0"))
+EMAIL_USE_LOCALTIME = literal_eval(
+    os.environ.get("THRUSH_EMAIL_USE_LOCALTIME", "False")
+)
+
+# # General
+EMAIL_SUBJECT_PREFIX = os.environ.get("THRUSH_EMAIL_SUBJECT_PREFIX", "")
+DEFAULT_FROM_EMAIL = os.environ.get("THRUSH_DEFAULT_FROM_EMAIL", "")
+SERVER_EMAIL = os.environ.get("THRUSH_SERVER_EMAIL", "")
+
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -183,7 +208,7 @@ MEDIA_ALLOWED_EXTENSIONS = ast.literal_eval(
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# DRF settings.
+# DRF settings
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -199,7 +224,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Swagger settings.
+# Swagger settings
 
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
@@ -212,11 +237,20 @@ SWAGGER_SETTINGS = {
     }
 }
 
-# Account component settings.
+# Account component
 
 AUTH_USER_MODEL = "account.User"
-DEFAULT_USER_GROUP = "users"
-DEFAULT_USER_GROUP_PERMISSIONS = []
+DEFAULT_USER_GROUP = "registered_users"
+DEFAULT_USER_GROUP_PERMISSIONS = [
+    # Tag
+    "blog.tag.view",
+    "blog.tag.add",
+    # Post
+    "blog.post.view",
+    "blog.post.add",
+    "blog.post.change",
+    "blog.post.delete",
+]
 MOBILE_LENGTH = int(os.environ.get("THRUSH_MOBILE_LENGTH", "13"))
 VERIFICATION_CODE_LENGTH = int(os.environ.get("THRUSH_VERIFY_CODE_LENGTH", "6"))
 VERIFICATION_CODE_LENGTH_RANGE = (
@@ -229,7 +263,7 @@ VERIFICATION_CODE_LIFE_TIME = int(
 LOGIN_URL = "/account/login"
 LOGOUT_URL = "/account/logout"
 
-# Blog component settings.
+# Blog component
 
 STAR_MIN_VALUE = int(os.environ.get("THRUSH_STAR_MIN_VALUE", "1"))
 STAR_MAX_VALUE = int(os.environ.get("THRUSH_STAR_MAX_VALUE", "10"))
@@ -238,14 +272,14 @@ STAR_MAX_VALUE = int(os.environ.get("THRUSH_STAR_MAX_VALUE", "10"))
 # category record deleted in "category" table.
 DELETED_POST_CATEGORY_NAME = "__deleted_category"
 
-# Page component.
+# Page component
 
 DELETED_MENU_GROUP_NAME = "__deleted_group_menu"
 
-# Slideshow component.
+# Slideshow component
 
 DELETED_SLIDE_GROUP_NAME = "__deleted_group_menu"
 
-# Product component.
+# Product component
 
 DELETED_PRODUCT_CATEGORY_NAME = "__deleted_product"

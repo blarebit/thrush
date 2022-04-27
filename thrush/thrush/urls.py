@@ -30,11 +30,8 @@ urlpatterns = [
     # Account.
     path("account/", include(("account.urls", "account"))),
 
-    # Base.
-    # path("base/", include(("base.urls", "base"))),
-
     # Blog.
-    # path("blog/", include(("blog.urls", "blog"))),
+    path("blog/", include(("blog.urls", "blog"))),
 
     # Cart.
     # path("shop/", include(("shop.cart.urls", "cart"))),

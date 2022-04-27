@@ -1,9 +1,6 @@
 """Base views."""
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, permissions, viewsets
-
-from .models import Category, Tag
-from .serializers import CategorySerializer, TagSerializer
+from rest_framework import permissions, viewsets
 
 
 class BaseViewSet(viewsets.GenericViewSet):
@@ -39,37 +36,7 @@ class BaseViewSet(viewsets.GenericViewSet):
         return super().get_permissions()
 
     def get_queryset(self):
-        """
-        This view should return a list of all the cart
-        for the currently authenticated user.
-        """
-        user = self.request.user
-        # breakpoint()
-        return self.queryset.filter(user=user)
-
-
-class TagViewSet(
-    BaseViewSet,
-    generics.ListCreateAPIView,
-    generics.RetrieveAPIView,
-    generics.CreateAPIView,
-):
-    """Tag view set."""
-
-    permission_classes = [permissions.DjangoModelPermissions]
-    queryset = Tag.objects.filter(is_deleted=False)
-    serializer_class = TagSerializer
-    alternative_lookup_field = "name"
-    filterset_fields = ("name",)
-
-
-class CategoryViewSet(
-    BaseViewSet, generics.ListCreateAPIView, generics.RetrieveUpdateDestroyAPIView
-):
-    """Category view set."""
-
-    permission_classes = [permissions.DjangoModelPermissions]
-    queryset = Category.objects.filter(is_deleted=False)
-    serializer_class = CategorySerializer
-    alternative_lookup_field = "name"
-    filterset_fields = ("name",)
+        """Filter records based on the 'user' field."""
+        if hasattr(self.queryset.model, "user"):
+            return self.queryset.filter(user=self.request.user)
+        return super().get_queryset()
