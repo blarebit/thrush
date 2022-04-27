@@ -1,5 +1,5 @@
 """Blog serializers."""
-from account.serializers import UserGeneralInfoSerializer, UserSerializer
+from account.serializers import UserPublicInfoSerializer, UserSerializer
 from django.db.models import Avg
 from rest_framework import serializers
 
@@ -80,6 +80,7 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = (
             "url",
+            "id",
             "name",
         )
         ref_name = "blog"
@@ -93,7 +94,7 @@ class PostSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
     stars_average = serializers.SerializerMethodField()
     bookmarks_count = serializers.SerializerMethodField()
-    user = UserGeneralInfoSerializer(many=False, read_only=True)
+    user = UserPublicInfoSerializer(many=False, read_only=True)
 
     class Meta:
         model = Post
@@ -121,12 +122,12 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_comments_count(self, obj):
         """Get post's comment count."""
-        return obj.comments.count()
+        return obj.post_comments.count()
 
     def get_stars_average(self, obj):
         """Get post's star average."""
-        if obj.stars.all().aggregate(Avg("star"))["star__avg"]:
-            return obj.stars.all().aggregate(Avg("star"))["star__avg"]
+        if obj.post_stars.all().aggregate(Avg("star"))["star__avg"]:
+            return obj.post_stars.all().aggregate(Avg("star"))["star__avg"]
         else:
             return 0
 
@@ -138,5 +139,14 @@ class PostSerializer(serializers.ModelSerializer):
         """Override tag IDs with tag details."""
         serialized_data = super().to_representation(instance)
         serialized_data["publisher"] = serialized_data.pop("user")
-        serialized_data["tags"] = TagSerializer(instance=instance.tags, many=True).data
+        serialized_data["tags"] = TagSerializer(
+            instance=instance.tags,
+            many=True,
+            context={"request": self.context["request"]},
+        ).data
+        serialized_data["category"] = CategorySerializer(
+            instance=instance.category,
+            many=False,
+            context={"request": self.context["request"]},
+        ).data
         return serialized_data

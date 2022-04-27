@@ -14,10 +14,14 @@ from .views import (
     RegisterView,
     UserViewSet,
     VerifyView,
+    UserPublicInfoViewSet,
 )
 
 router = routers.DefaultRouter()
 router.register("users", UserViewSet, basename="user")
+router.register(
+    "users/public_info/", UserPublicInfoViewSet, basename="user_public_info"
+)
 router.register("address", AddressViewSet, basename="address")
 router.register("groups", GroupViewSet, basename="group")
 router.register("permissions", PermissionViewSet, basename="permission")

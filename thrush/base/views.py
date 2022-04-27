@@ -6,7 +6,7 @@ from rest_framework import permissions, viewsets
 class BaseViewSet(viewsets.GenericViewSet):
     """Get by multiple lookup fields."""
 
-    # It should be override in the derived classes.
+    # It should be overridden in the derived classes.
     alternative_lookup_field = None
 
     def get_object(self):
@@ -25,8 +25,9 @@ class BaseViewSet(viewsets.GenericViewSet):
             field = self.alternative_lookup_field
             value = self.kwargs[self.lookup_field]
 
-        if not self.request.user.is_superuser:
-            queryset = queryset.filter(user=self.request.user)
+        if hasattr(queryset.model, "user"):
+            if not self.request.user.is_superuser:
+                queryset = queryset.filter(user=self.request.user)
         return get_object_or_404(queryset, **{field: value})
 
     def get_permissions(self):
@@ -37,6 +38,6 @@ class BaseViewSet(viewsets.GenericViewSet):
 
     def get_queryset(self):
         """Filter records based on the 'user' field."""
-        if hasattr(self.queryset.model, "user"):
+        if hasattr(self.queryset.model, "user") and not self.request.user.is_anonymous:
             return self.queryset.filter(user=self.request.user)
         return super().get_queryset()

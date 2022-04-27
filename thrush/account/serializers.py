@@ -155,15 +155,16 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserGeneralInfoSerializer(serializers.ModelSerializer):
+class UserPublicInfoSerializer(serializers.ModelSerializer):
     """User's public info serializer."""
 
-    url = serializers.HyperlinkedIdentityField(view_name="account:user-detail")
+    # FIXME: don't know why it doesn't work!
+    # url = serializers.HyperlinkedIdentityField(view_name="account:user_public_info")
 
     class Meta:
         model = User
         fields = (
-            "url",
+            # "url",
             "id",
             "first_name",
             "last_name",

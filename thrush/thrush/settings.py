@@ -245,6 +245,10 @@ DEFAULT_USER_GROUP_PERMISSIONS = [
     # Tag
     "blog.tag.view",
     "blog.tag.add",
+    # Category
+    "blog.category.view",
+    "blog.category.add",
+    "blog.category.change",
     # Post
     "blog.post.view",
     "blog.post.add",

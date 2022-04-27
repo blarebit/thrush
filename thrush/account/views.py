@@ -21,6 +21,7 @@ from .serializers import (
     PermissionSerializer,
     RegisterSerializer,
     UserSerializer,
+    UserPublicInfoSerializer,
 )
 
 
@@ -58,6 +59,15 @@ class UserViewSet(BaseViewSet):
         "is_active",
         "date_joined",
     )
+
+
+class UserPublicInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    """User public info view set."""
+
+    permission_classes = [permissions.AllowAny]
+    queryset = User.objects.all()
+    serializer_class = UserPublicInfoSerializer
+    lookup_field = "id"
 
 
 class GroupViewSet(BaseViewSet):
