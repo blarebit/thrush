@@ -10,6 +10,7 @@ from .views import (
     PostViewSet,
     StarViewSet,
     TagViewSet,
+    MyBookmarkViewSet,
 )
 
 router = routers.DefaultRouter()
@@ -40,4 +41,5 @@ urlpatterns = [
     path("", include(category_router.urls)),
     path("", include(post_router.urls)),
     path("", include(tag_router.urls)),
+    path("me/blog/bookmarks", MyBookmarkViewSet.as_view({"get": "list"}), name="my_blog_bookmarks"),
 ]

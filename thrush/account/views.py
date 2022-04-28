@@ -199,7 +199,7 @@ class ChangePasswordView(views.APIView):
 class MyProfileView(generics.RetrieveAPIView, generics.UpdateAPIView):
     """User profile view."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, ThrushDjangoModelPermissions]
     serializer_class = UserSerializer
 
     def get_object(self):

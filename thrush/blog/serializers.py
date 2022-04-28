@@ -1,6 +1,7 @@
 """Blog serializers."""
 from account.serializers import UserPublicInfoSerializer, UserSerializer
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from .models import Category, Comment, Post, Star, Tag
@@ -14,13 +15,21 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ("is_approved",)
         fields = (
             "id",
-            "user",
             "message",
             "reply_to",
-            "post",
             "is_approved",
         )
         user_fields = ("id", "url", "email", "first_name", "last_name")
+        extra_kwargs = {
+            "post_pk": {"required": True, "read_only": True},
+            "category_pk": {"required": True, "read_only": True},
+        }
+
+    def validate(self, attrs):
+        self.post = get_object_or_404(
+            Post, pk=int(self.context["view"].kwargs["post_pk"])
+        )
+        return super().validate(attrs)
 
     def to_representation(self, instance):
         """DRF built-in method."""
@@ -41,7 +50,11 @@ class StarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Star
-        fields = ("star", "user", "post")
+        fields = ("star", "post")
+
+    def validate(self, attrs):
+        attrs["user"] = self.context["request"].user
+        return super().validate(attrs)
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
@@ -53,6 +66,10 @@ class BookmarkSerializer(serializers.ModelSerializer):
         model = Post
         fields = ("post",)
         ref_name = "blog"
+
+    def validate(self, attrs):
+        attrs["user"] = self.context["request"].user
+        return super().validate(attrs)
 
 
 class CategorySerializer(serializers.ModelSerializer):

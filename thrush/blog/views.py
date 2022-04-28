@@ -1,7 +1,9 @@
 """Blog views."""
 from base.views import BaseViewSet
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
+
+from base.permissions import ThrushDjangoModelPermissions
 
 from .models import Category, Comment, Post, Star, Tag
 from .serializers import (
@@ -47,23 +49,11 @@ class CommentViewSet(
         """Only fetch post-related comments."""
         return Comment.objects.filter(post=self.kwargs["post_pk"])
 
-    def create(self, request, *args, **kwargs):
-        """Attach user ID and post ID into a request."""
-        request.data["user"] = self.request.user.id
-        request.data["post"] = kwargs.pop("post_pk")
-        return super().create(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        """Attach user ID and post ID into a request."""
-        request.data["user"] = self.request.user.id
-        request.data["post"] = kwargs.pop("post_pk")
-        return super().update(request, *args, **kwargs)
+    def perform_create(self, serializer):
+        return serializer.save(post=serializer.post, user=self.request.user)
 
 
-class StarViewSet(
-    BaseViewSet,
-    generics.ListCreateAPIView,
-):
+class StarViewSet(BaseViewSet, generics.ListCreateAPIView):
     """Star view set."""
 
     permission_classes = [permissions.IsAuthenticated]
@@ -73,7 +63,6 @@ class StarViewSet(
 
     def create(self, request, *args, **kwargs):
         """Attach user ID into a request. Also, handle updating a star."""
-        request.data["user"] = self.request.user.id
         current_star = Star.objects.filter(
             user=self.request.user, post=request.data["post"]
         ).first()
@@ -98,7 +87,6 @@ class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyA
 
     def create(self, request, *args, **kwargs):
         """Attach user ID into a request."""
-        request.data["user"] = self.request.user.id
         try:
             self.get_queryset().get(id=request.data["post"])
             return Response(
@@ -124,6 +112,7 @@ class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyA
     def destroy(self, request, *args, **kwargs):
         """DRF built-in method."""
         try:
+            # FIXME: maybe it's needed to make it more consistent, like 'post' instead of 'pk'?
             post = Post.objects.get(id=kwargs["pk"])
         except Post.DoesNotExist:
             return Response(
@@ -135,16 +124,9 @@ class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyA
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        if post.bookmarks.filter(bookmarks__bookmarks=self.request.user).exists():
+        if post.bookmarks.filter(post_bookmarks__bookmarks=self.request.user).exists():
             post.bookmarks.remove(self.request.user)
-            return Response(
-                data={
-                    "status_code": status.HTTP_204_NO_CONTENT,
-                    "code": status.HTTP_204_NO_CONTENT,
-                    "detail": "Bookmark removed.",
-                },
-                status=status.HTTP_204_NO_CONTENT,
-            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(
             data={
@@ -154,6 +136,24 @@ class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyA
             },
             status=status.HTTP_404_NOT_FOUND,
         )
+
+
+class MyBookmarkViewSet(viewsets.ReadOnlyModelViewSet):
+    """User bookmarks viewset."""
+
+    permission_classes = [permissions.IsAuthenticated, ThrushDjangoModelPermissions]
+    queryset = Post.objects.all().only("id", "bookmarks")
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(bookmarks=self.request.user)
+
+    def get_object(self):
+        """DRF built-in method.
+
+        Only return the current logged-in user object.
+        """
+        return self.request.user
 
 
 class TagViewSet(

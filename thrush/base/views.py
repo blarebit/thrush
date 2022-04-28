@@ -35,9 +35,3 @@ class BaseViewSet(viewsets.GenericViewSet):
         if self.request.method == "GET":
             self.permission_classes = [permissions.AllowAny]
         return super().get_permissions()
-
-    def get_queryset(self):
-        """Filter records based on the 'user' field."""
-        if hasattr(self.queryset.model, "user") and not self.request.user.is_anonymous:
-            return self.queryset.filter(user=self.request.user)
-        return super().get_queryset()

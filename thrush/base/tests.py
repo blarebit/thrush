@@ -42,11 +42,15 @@ class BaseAPITestCase(APITestCase):
 
         return username
 
-    def fake_user(self, username="user1", activate_user=True):
-        return self._register_and_login(username, "123", "user-password1", activate_user)
+    def fake_user(self, username="user1", mobile="123", activate_user=True):
+        return self._register_and_login(
+            username, mobile, "user-password1", activate_user
+        )
 
     def fake_admin(self, activate_user=True):
-        return self._register_and_login("admin1", "321", "admin-password1", activate_user)
+        return self._register_and_login(
+            "admin1", "321", "admin-password1", activate_user
+        )
 
     def logout(self):
         self.client.get(reverse("account:logout"))
@@ -66,10 +70,14 @@ class BaseAPITestCase(APITestCase):
         result["tags"].append(response.json()["id"])
 
         # Category
-        response = self.client.post(reverse("blog:category-list"), {"name": "Development", "parent": ""})
+        response = self.client.post(
+            reverse("blog:category-list"), {"name": "Development", "parent": ""}
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         result["categories"].append(response.json()["id"])
-        response = self.client.post(reverse("blog:category-list"), {"name": "Debug", "parent": ""})
+        response = self.client.post(
+            reverse("blog:category-list"), {"name": "Debug", "parent": ""}
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         result["categories"].append(response.json()["id"])
 
