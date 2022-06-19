@@ -180,18 +180,19 @@ class BlogTest(BaseAPITestCase):
             },
         }
         self.assertDictEqual(response.json(), expected_result)
+        post_id = response.json()["id"]
 
         # Check by a GET request
         response = self.client.get(reverse("blog:post-list"))
         self.assertEqual(response.json()["count"], 1)
 
         # Check by URL
-        response = self.client.get(reverse("blog:post-detail", kwargs={"pk": "1"}))
+        response = self.client.get(reverse("blog:post-detail", kwargs={"pk": post_id}))
         self.assertDictEqual(response.json(), expected_result)
 
         # Update a post
         response = self.client.patch(
-            reverse("blog:post-detail", kwargs={"pk": "1"}),
+            reverse("blog:post-detail", kwargs={"pk": post_id}),
             {
                 "title": "Multi-threading in Python",
                 "tags": [tags_and_categories["tags"][0]],
@@ -207,7 +208,34 @@ class BlogTest(BaseAPITestCase):
 
         # Check delete
         response = self.client.delete(
-            reverse("blog:category-detail", kwargs={"pk": "DevOps"})
+            reverse("blog:post-detail", kwargs={"pk": post_id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Create another post just the coming test
+        response = self.client.post(
+            reverse("blog:post-list"),
+            {
+                "title": "Threading in Python",
+                "brief": "How to use Thread in Python",
+                "content": "import threading",
+                "slug": "threading-in-python1",
+                "tags": tags_and_categories["tags"],
+                "category": tags_and_categories["categories"][0],
+                "image": "http://127.0.0.1/file/1/1.jpg",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        post_id = response.json()["id"]
+
+        # Try to update and delete someone else's post
+        self.fake_user(username="user2", mobile="111")
+        response = self.client.patch(
+            reverse("blog:post-detail", kwargs={"pk": post_id}),
+            {
+                "title": "Multi-threading in Python",
+                "tags": [tags_and_categories["tags"][0]],
+            },
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 

@@ -45,7 +45,7 @@ def get_deleted_post_category():
 class Post(Base):
     """Post model implementation."""
 
-    title = models.CharField(max_length=1024, null=False, unique=True)
+    title = models.CharField(max_length=1024, null=False)
     brief = models.TextField(null=False)
     content = models.TextField(null=False)
     slug = models.CharField(max_length=1024, unique=True)
