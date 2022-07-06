@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "polymorphic",
     "rest_framework",
     "rest_framework.authtoken",
+    "guardian",
     "corsheaders",
     "django_filters",
     "drf_yasg",
@@ -110,6 +111,29 @@ TEMPLATES = [
 WSGI_APPLICATION = "thrush.wsgi.application"
 
 APPEND_SLASH = True
+
+# Logging
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("THRUSH_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -176,6 +200,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [
     "account.backends.AccountBackend",
     "django.contrib.auth.backends.ModelBackend",
+    "guardian.backends.ObjectPermissionBackend",
 ]
 
 # Internationalization
@@ -237,6 +262,16 @@ SWAGGER_SETTINGS = {
     }
 }
 
+# Guardian
+
+GUARDIAN_MONKEY_PATCH = False
+DEFAULT_PERMISSIONS_PER_OBJECT = [
+    "add_{model}",
+    "view_{model}",
+    "change_{model}",
+    "delete_{model}",
+]
+
 # Account component
 
 AUTH_USER_MODEL = "account.User"
@@ -254,6 +289,10 @@ DEFAULT_USER_GROUP_PERMISSIONS = [
     "blog.post.add",
     "blog.post.change",
     "blog.post.delete",
+    # Comment
+    "blog.comment.view",
+    "blog.comment.add",
+    # "blog.comment.change",
 ]
 MOBILE_LENGTH = int(os.environ.get("THRUSH_MOBILE_LENGTH", "13"))
 VERIFICATION_CODE_LENGTH = int(os.environ.get("THRUSH_VERIFY_CODE_LENGTH", "6"))

@@ -86,7 +86,7 @@ class AccountTest(BaseAPITestCase):
         self.assertDictEqual(response.json(), expected_response)
 
     def test_user_authentication(self):
-        self.fake_user()
+        self.fake_user(login=False)
         response = self.client.post(
             reverse("account:login"),
             {"username": "user1", "password": "user-password1"},
@@ -142,7 +142,7 @@ class AccountTest(BaseAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertDictContainsSubset(
             {
-                "id": 1,
+                "id": 2,
                 "username": "user1",
                 "mobile": "123",
                 "email": "",
@@ -163,10 +163,9 @@ class AccountTest(BaseAPITestCase):
         response = self.client.patch(
             reverse("account:profile"), {"first_name": "first", "last_name": "user"}
         )
-        self.assertEqual(response.status_code, 200)
         self.assertDictContainsSubset(
             {
-                "id": 1,
+                "id": 2,
                 "username": "user1",
                 "mobile": "123",
                 "email": "",
@@ -182,7 +181,7 @@ class AccountTest(BaseAPITestCase):
         )
 
     def test_activate_user(self):
-        with patch("account.models.send_verification_code") as mocked_fn:
+        with patch("account.models.user.send_verification_code") as mocked_fn:
             self.fake_user(activate_user=False)
 
             # Test the user (should get invalid auth due to not being activated).

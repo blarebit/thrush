@@ -3,7 +3,7 @@ from base.views import BaseViewSet
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 
-from base.permissions import ThrushDjangoModelPermissions
+from account.models.user import User
 
 from .models import Category, Comment, Post, Star, Tag
 from .serializers import (
@@ -21,10 +21,20 @@ class PostViewSet(
 ):
     """Post view set."""
 
-    permission_classes = [permissions.DjangoModelPermissions]
+    permission_classes = [permissions.DjangoObjectPermissions]
     queryset = Post.objects.filter(is_deleted=False)
     serializer_class = PostSerializer
     filterset_fields = ("title", "slug", "tags", "is_draft")
+
+    def partial_update(self, request, *args, **kwargs):
+
+        print("P>>>>>>>>>>", self.get_queryset(), request.user)
+
+        return super().partial_update(request, *args, **kwargs)
+
+    # def update(self, request, *args, **kwargs):
+        # print(">>>>>>>>>>", self.get_queryset())
+        # return super().update(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         """Override post value."""
@@ -40,14 +50,12 @@ class CommentViewSet(
 ):
     """Comment view set."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoObjectPermissions]
     queryset = Comment.objects.filter(is_deleted=False, is_approved=True)
     serializer_class = CommentSerializer
     filterset_fields = ("user", "is_approved", "post")
-
-    def get_queryset(self):
-        """Only fetch post-related comments."""
-        return Comment.objects.filter(post=self.kwargs["post_pk"])
+    filter_by_fields = {"post": "post_pk"}
+    filter_by_permissions = {"blog.approve_comment": {"is_approved": None}}
 
     def perform_create(self, serializer):
         return serializer.save(post=serializer.post, user=self.request.user)
@@ -56,7 +64,7 @@ class CommentViewSet(
 class StarViewSet(BaseViewSet, generics.ListCreateAPIView):
     """Star view set."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoObjectPermissions]
     queryset = Star.objects.all()
     serializer_class = StarSerializer
     http_method_names = ["post"]
@@ -77,18 +85,16 @@ class StarViewSet(BaseViewSet, generics.ListCreateAPIView):
 class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyAPIView):
     """Bookmark view set."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.DjangoObjectPermissions]
     queryset = Post.objects.all().only("id", "bookmarks")
     serializer_class = BookmarkSerializer
-
-    def get_queryset(self):
-        """Only fetch bookmark-related posts."""
-        return Post.objects.filter(bookmarks=self.request.user)
 
     def create(self, request, *args, **kwargs):
         """Attach user ID into a request."""
         try:
-            self.get_queryset().get(id=request.data["post"])
+            self.get_queryset().get(id=request.data["post"][0]).bookmarks.get(
+                id=self.request.user.id
+            )
             return Response(
                 data={
                     "status_code": status.HTTP_400_BAD_REQUEST,
@@ -97,7 +103,7 @@ class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyA
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        except Post.DoesNotExist:
+        except User.DoesNotExist:
             post = Post.objects.get(id=request.data["post"])
             post.bookmarks.add(self.request.user)
         return Response(
@@ -141,12 +147,9 @@ class BookmarkViewSet(BaseViewSet, generics.ListCreateAPIView, generics.DestroyA
 class MyBookmarkViewSet(viewsets.ReadOnlyModelViewSet):
     """User bookmarks viewset."""
 
-    permission_classes = [permissions.IsAuthenticated, ThrushDjangoModelPermissions]
+    permission_classes = [permissions.DjangoObjectPermissions]
     queryset = Post.objects.all().only("id", "bookmarks")
     serializer_class = PostSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(bookmarks=self.request.user)
 
     def get_object(self):
         """DRF built-in method.
@@ -164,7 +167,7 @@ class TagViewSet(
 ):
     """Tag view set."""
 
-    permission_classes = [permissions.DjangoModelPermissions]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
     queryset = Tag.objects.filter(is_deleted=False)
     serializer_class = TagSerializer
     alternative_lookup_field = "name"
@@ -176,8 +179,7 @@ class CategoryViewSet(
 ):
     """Category view set."""
 
-    permission_classes = [permissions.DjangoModelPermissions]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
     queryset = Category.objects.filter(is_deleted=False)
     serializer_class = CategorySerializer
-    alternative_lookup_field = "name"
     filterset_fields = ("name",)

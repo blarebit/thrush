@@ -2,6 +2,11 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.contrib.auth.models import Permission
+from guardian.shortcuts import assign_perm
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class BaseManager(models.Manager):
@@ -86,3 +91,35 @@ class BaseStar(models.Model):
 
     def __str__(self):
         return f"{self.star}"
+
+
+def assign_object_permissions(instance, user=None):
+    """Assign permissions per object on groups and users.
+
+    Args:
+        instance (Any): Django model instance.
+        user (User): user object. Defaults to None.
+    """
+    for raw_codename in settings.DEFAULT_PERMISSIONS_PER_OBJECT:
+        codename = raw_codename.format(model=instance.model_name)
+        try:
+            permission = Permission.objects.get(codename=codename)
+        except Permission.DoesNotExist:
+            continue
+        for group in permission.group_set.all():
+            assign_perm(permission.codename, group, instance)
+            _logger.info(
+                "Assigned '%s' permission on '%s' group for '%s' object",
+                permission.name,
+                group.name,
+                instance,
+            )
+
+        if user:
+            user.add_obj_perm(codename, instance)
+            _logger.info(
+                "Assigned '%s' permission on '%s' user for '%s' object",
+                permission.name,
+                user.username,
+                instance,
+            )

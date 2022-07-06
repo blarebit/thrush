@@ -96,16 +96,13 @@ class AddressViewSet(BaseViewSet):
         "floor",
         "unit",
     )
-
-    # def get_queryset(self):
-    #     """Only fetch address-related users."""
-    #     return User.objects.filter(user=self.kwargs["user_pk"])
+    filter_by_fields = {"user": "user_pk"}
 
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     """Permission view set."""
 
-    permission_classes = [permissions.IsAuthenticated, ThrushDjangoModelPermissions]
+    permission_classes = [permissions.DjangoModelPermissions]
     queryset = Permission.objects.all()
     serializer_class = PermissionSerializer
     filterset_fields = ("name", "codename")
@@ -199,7 +196,7 @@ class ChangePasswordView(views.APIView):
 class MyProfileView(generics.RetrieveAPIView, generics.UpdateAPIView):
     """User profile view."""
 
-    permission_classes = [permissions.IsAuthenticated, ThrushDjangoModelPermissions]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
 
     def get_object(self):

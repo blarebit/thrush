@@ -1,40 +1,14 @@
 """Blog app models."""
 from account.models import User
-from base.models import Base, BaseComment, BaseStar
-from django.conf import settings
+from base.models import Base, assign_object_permissions
 from django.db import models
-
-
-class Tag(Base):
-    """Tag model implementation."""
-
-    name = models.CharField(max_length=75, unique=True)
-
-    def __str__(self):
-        if self.is_deleted:
-            return f"{self.name} [deleted]"
-        return self.name
-
-
-class Category(Base):
-    """Category model implementation."""
-
-    name = models.CharField(max_length=75)
-    parent = models.ForeignKey(
-        "self",
-        null=True,
-        blank=True,
-        related_name="category_parent",
-        on_delete=models.DO_NOTHING,
-    )
-
-    class Meta:
-        unique_together = ("name", "parent")
-
-    def __str__(self):
-        if self.is_deleted:
-            return f"{self.name} [deleted]"
-        return self.name
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from django.conf import settings
+from .tag import Tag
+from .category import Category
+from guardian.models import UserObjectPermissionBase
+from guardian.models import GroupObjectPermissionBase
 
 
 def get_deleted_post_category():
@@ -44,6 +18,8 @@ def get_deleted_post_category():
 
 class Post(Base):
     """Post model implementation."""
+
+    model_name = "post"
 
     title = models.CharField(max_length=1024, null=False)
     brief = models.TextField(null=False)
@@ -77,27 +53,19 @@ class Post(Base):
         return self.title
 
 
-class Comment(BaseComment):
-    """Comment model implementation."""
+class PostUserObjectPermission(UserObjectPermissionBase):
+    """Guardian user object class."""
 
-    user = models.ForeignKey(
-        User, related_name="post_comment_user", on_delete=models.CASCADE
-    )
-    post = models.ForeignKey(
-        Post, related_name="post_comments", on_delete=models.CASCADE
-    )
+    content_object = models.ForeignKey(Post, on_delete=models.CASCADE)
 
 
-class Star(BaseStar):
-    """Star (posts) model implementation."""
+class PostGroupObjectPermission(GroupObjectPermissionBase):
+    """Guardian group object class."""
 
-    user = models.ForeignKey(
-        User, related_name="post_star_user", on_delete=models.CASCADE
-    )
-    post = models.ForeignKey(Post, related_name="post_stars", on_delete=models.CASCADE)
+    content_object = models.ForeignKey(Post, on_delete=models.CASCADE)
 
-    class Meta:
-        unique_together = [("user", "post")]
 
-    def __str__(self):
-        return f"{self.post.title}[{self.star}]"
+@receiver(post_save, sender=Post)
+def add_permissions(sender, instance, created, **kwargs):
+    if created:
+        assign_object_permissions(instance, instance.user)

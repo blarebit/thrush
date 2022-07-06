@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from freezegun import freeze_time
 from base.tests import BaseAPITestCase
+from blog.models import Comment
 
 
 class BlogTest(BaseAPITestCase):
@@ -74,7 +75,7 @@ class BlogTest(BaseAPITestCase):
 
         # Check by URL
         response = self.client.get(
-            reverse("blog:category-detail", kwargs={"pk": "Python"})
+            reverse("blog:category-detail", kwargs={"pk": "1"})
         )
         self.assertDictEqual(
             response.json(),
@@ -103,7 +104,7 @@ class BlogTest(BaseAPITestCase):
 
         # Update a category
         response = self.client.put(
-            reverse("blog:category-detail", kwargs={"pk": "DevOps"}),
+            reverse("blog:category-detail", kwargs={"pk": "2"}),
             {"name": "Server", "parent": 1},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -173,7 +174,7 @@ class BlogTest(BaseAPITestCase):
             "previous": None,
             "visited": 0,
             "publisher": {
-                "id": 2,
+                "id": 3,
                 "first_name": "",
                 "last_name": "",
                 "is_active": True,
@@ -227,6 +228,8 @@ class BlogTest(BaseAPITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         post_id = response.json()["id"]
+
+        self.logout()
 
         # Try to update and delete someone else's post
         self.fake_user(username="user2", mobile="111")
@@ -339,7 +342,7 @@ class BlogTest(BaseAPITestCase):
 
         # Bookmark the post
         response = self.client.post(reverse("blog:bookmark-list"), {"post": post_id})
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
         self.assertDictEqual(
             response.json(),
             {"code": 201, "detail": "Bookmark created.", "status_code": 201},
@@ -413,7 +416,7 @@ class BlogTest(BaseAPITestCase):
                         "previous": None,
                         "visited": 0,
                         "publisher": {
-                            "id": 2,
+                            "id": 3,
                             "first_name": "",
                             "last_name": "",
                             "is_active": True,
@@ -478,7 +481,7 @@ class BlogTest(BaseAPITestCase):
             ),
             {"message": "first comment"},
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.json())
         response_json = response.json()
         self.assertDictEqual(
             response_json,
@@ -487,7 +490,7 @@ class BlogTest(BaseAPITestCase):
                 "message": "first comment",
                 "reply_to": "",
                 "is_approved": False,
-                "user": {"id": 2, "email": "", "first_name": "", "last_name": ""},
+                "user": {"id": 3, "email": "", "first_name": "", "last_name": ""},
             },
         )
         comment_id = response_json["id"]
@@ -506,6 +509,11 @@ class BlogTest(BaseAPITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        # Just approve the comment for next tests.
+        c = Comment.objects.get(id=response.json()["id"])
+        c.is_approved = True
+        c.save()
+
         # Update the comment
         response = self.client.patch(
             reverse(
@@ -518,15 +526,15 @@ class BlogTest(BaseAPITestCase):
             ),
             {"message": "second comment", "reply_to": comment_id},
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.json())
         self.assertDictEqual(
             response.json(),
             {
                 "id": 2,
                 "message": "second comment",
                 "reply_to": comment_id,
-                "is_approved": False,
-                "user": {"id": 3, "email": "", "first_name": "", "last_name": ""},
+                "is_approved": True,
+                "user": {"id": 4, "email": "", "first_name": "", "last_name": ""},
             },
         )
 
@@ -541,7 +549,7 @@ class BlogTest(BaseAPITestCase):
                 },
             ),
         )
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         # Logout and check the comment by anonymous user
         self.logout()

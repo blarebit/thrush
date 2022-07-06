@@ -18,7 +18,7 @@ class BaseAPITestCase(APITestCase):
     def setUp(self):
         Command().handle()
 
-    def _register_and_login(self, username, mobile, password, activate_user):
+    def _register_and_login(self, username, mobile, password, activate_user, login=True):
         response = self.client.post(
             reverse("account:register"),
             {"mobile": mobile, "username": username, "password": password},
@@ -32,6 +32,9 @@ class BaseAPITestCase(APITestCase):
         user.is_active = True
         user.save()
 
+        if not login:
+            return username
+
         response = self.client.post(
             reverse("account:login"), {"username": username, "password": password}
         )
@@ -42,14 +45,14 @@ class BaseAPITestCase(APITestCase):
 
         return username
 
-    def fake_user(self, username="user1", mobile="123", activate_user=True):
+    def fake_user(self, username="user1", mobile="123", activate_user=True, login=True):
         return self._register_and_login(
-            username, mobile, "user-password1", activate_user
+            username, mobile, "user-password1", activate_user, login
         )
 
-    def fake_admin(self, activate_user=True):
+    def fake_admin(self, activate_user=True, login=True):
         return self._register_and_login(
-            "admin1", "321", "admin-password1", activate_user
+            "admin1", "321", "admin-password1", activate_user, login
         )
 
     def logout(self):
